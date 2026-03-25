@@ -151,11 +151,27 @@ export function App() {
               Upload a level spread dataset, adjust the distribution settings, and copy the modified spread for use in your SLS configuration.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Levels: {sourceEntries.length}</Badge>
-            <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
-            <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
-            {error ? <Badge variant="destructive">{error}</Badge> : null}
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Controls the{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                defaultCreatureLevelUpChance
+              </code>{" "}
+              table in{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                BepInEx/StarLevelSystem/LevelSettings.yaml
+              </code>
+              . When a creature spawns, the mod makes a <strong>single 0–100 roll</strong> and selects the highest level whose chance value the roll falls within — checking from the highest level down.
+              For example, with{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">1: 20, 2: 10, 3: 5</code>
+              {" "}a roll of 8 lands within level 2 (≤ 10) but not level 3 (≤ 5), so the creature is 2-star. A roll of 50 exceeds all thresholds — the creature spawns at base level (no stars). Level 1 is not required to be 100; its value controls how often any leveled creature appears at all.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">Levels: {sourceEntries.length}</Badge>
+              <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
+              <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
+              {error ? <Badge variant="destructive">{error}</Badge> : null}
+            </div>
           </CardContent>
         </Card>
 
