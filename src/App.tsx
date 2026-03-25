@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 
+import { AlgorithmSelect } from "@/components/levelupchance/algorithm-select"
 import { DEFAULT_LEVEL_SPREAD } from "@/components/levelupchance/constants"
 import { DatasetEditor } from "@/components/levelupchance/dataset-editor"
 import { OutputTable } from "@/components/levelupchance/output-table"
@@ -7,6 +8,9 @@ import { SpreadChart } from "@/components/levelupchance/spread-chart"
 import type { LevelEntry } from "@/components/levelupchance/types"
 import {
   applyCenteredWeights,
+  distributionAlgorithms,
+  isDistributionAlgorithm,
+  type DistributionAlgorithm,
   formatLevelSpread,
   parseLevelSpread,
 } from "@/components/levelupchance/utils"
@@ -24,6 +28,9 @@ export function App() {
   const [rawInput, setRawInput] = useState(DEFAULT_LEVEL_SPREAD)
   const [sourceEntries, setSourceEntries] = useState<LevelEntry[]>(() =>
     parseLevelSpread(DEFAULT_LEVEL_SPREAD)
+  )
+  const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
+    "exponential"
   )
   const [centerPosition, setCenterPosition] = useState(1)
   const [copied, setCopied] = useState(false)
@@ -48,8 +55,8 @@ export function App() {
       return []
     }
 
-    return applyCenteredWeights(sourceEntries, safeCenterPosition - 1)
-  }, [sourceEntries, safeCenterPosition])
+    return applyCenteredWeights(sourceEntries, safeCenterPosition - 1, algorithm)
+  }, [sourceEntries, safeCenterPosition, algorithm])
 
   const selectedLevel =
     sourceEntries[Math.max(0, safeCenterPosition - 1)]?.level ??
@@ -105,6 +112,19 @@ export function App() {
             <Badge variant="secondary">Levels: {sourceEntries.length}</Badge>
             <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
             <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
+            <AlgorithmSelect
+              value={algorithm}
+              options={distributionAlgorithms.map((item) => ({
+                value: item.value,
+                label: item.label,
+              }))}
+              onChange={(nextValue) => {
+                if (isDistributionAlgorithm(nextValue)) {
+                  setAlgorithm(nextValue)
+                  setCopied(false)
+                }
+              }}
+            />
             {error ? <Badge variant="destructive">{error}</Badge> : null}
           </CardContent>
         </Card>
