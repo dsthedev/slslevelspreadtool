@@ -1,4 +1,5 @@
 import type { LevelEntry } from "@/components/levelupchance/types"
+import type { DistributionAlgorithm } from "@/components/levelupchance/utils"
 import {
   Card,
   CardContent,
@@ -11,9 +12,17 @@ import { cn } from "@/lib/utils"
 type SpreadChartProps = {
   entries: LevelEntry[]
   centerPosition: number
+  algorithm: DistributionAlgorithm
 }
 
-function getBandColorClass(distanceFromCenter: number) {
+function getBandColorClass(
+  algorithm: DistributionAlgorithm,
+  distanceFromCenter: number
+) {
+  if (algorithm === "evenish") {
+    return "bg-indigo-500"
+  }
+
   if (distanceFromCenter <= 0) {
     return "bg-green-500"
   }
@@ -33,7 +42,11 @@ function getBandColorClass(distanceFromCenter: number) {
   return "bg-red-500"
 }
 
-export function SpreadChart({ entries, centerPosition }: SpreadChartProps) {
+export function SpreadChart({
+  entries,
+  centerPosition,
+  algorithm,
+}: SpreadChartProps) {
   const maxScaleValue = 100
   const centerIndex = Math.max(centerPosition - 1, 0)
 
@@ -71,7 +84,7 @@ export function SpreadChart({ entries, centerPosition }: SpreadChartProps) {
                     <div
                       className={cn(
                         "w-full rounded-t-md transition-all duration-200 hover:brightness-110",
-                        getBandColorClass(distanceFromCenter)
+                        getBandColorClass(algorithm, distanceFromCenter)
                       )}
                       style={{ height: `${normalizedHeight}%`, maxHeight: "100%" }}
                       title={`L${entry.level}: ${entry.value.toFixed(4)}`}

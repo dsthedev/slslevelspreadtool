@@ -204,6 +204,7 @@ export function App() {
             <SpreadChart
               entries={weightedEntries}
               centerPosition={safeCenterPosition}
+              algorithm={algorithm}
             />
           </div>
 
