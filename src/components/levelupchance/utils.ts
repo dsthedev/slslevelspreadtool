@@ -1,12 +1,32 @@
 import { DECAY_FACTOR, DEFAULT_STEP_AMOUNT } from "@/components/levelupchance/constants"
 import type { LevelEntry } from "@/components/levelupchance/types"
 
-export type AlgorithmControl = "stepAmount"
+export type AlgorithmControl =
+  | "centerPosition"
+  | "centerWeight"
+  | "stepAmount"
 
 export const distributionAlgorithms = [
-  { value: "exponential", label: "Exponential (original)", controls: [] },
-  { value: "gaussian", label: "Gaussian", controls: [] },
-  { value: "linear", label: "Linear taper", controls: ["stepAmount"] },
+  {
+    value: "exponential",
+    label: "Exponential (original)",
+    controls: ["centerPosition", "centerWeight"],
+  },
+  {
+    value: "gaussian",
+    label: "Gaussian",
+    controls: ["centerPosition", "centerWeight"],
+  },
+  {
+    value: "linear",
+    label: "Linear taper",
+    controls: ["centerPosition", "centerWeight", "stepAmount"],
+  },
+  {
+    value: "evenish",
+    label: "Even-ish",
+    controls: [],
+  },
 ] as const
 
 export type DistributionAlgorithm =
@@ -61,6 +81,7 @@ export function applyCenteredWeights(
     const distance = Math.abs(index - safeCenter)
     const rawValue = getWeightByAlgorithm(
       algorithm,
+      index,
       distance,
       entries.length,
       centerWeight,
@@ -77,6 +98,7 @@ export function applyCenteredWeights(
 
 function getWeightByAlgorithm(
   algorithm: DistributionAlgorithm,
+  index: number,
   distance: number,
   totalEntries: number,
   centerWeight: number,
@@ -91,6 +113,11 @@ function getWeightByAlgorithm(
       const maxDistance = Math.max(totalEntries - 1, 1)
       const adjustedDistance = distance * tuningOptions.stepAmount
       return centerWeight * Math.max(0, 1 - adjustedDistance / maxDistance)
+    }
+    case "evenish": {
+      const maxIndex = Math.max(totalEntries - 1, 1)
+      const step = 99 / maxIndex
+      return Math.max(1, 100 - step * index)
     }
     case "exponential":
     default:

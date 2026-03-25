@@ -63,55 +63,61 @@ export function WeightSlider({
           options={algorithmOptions}
           onChange={(nextValue) => onAlgorithmChange(nextValue as DistributionAlgorithm)}
         />
-        <div className="flex items-center justify-between">
-          <Label htmlFor="weight-center">Weight center level</Label>
-          <Badge variant="outline">
-            <Equal />
-            L{selectedLevelLabel}
-          </Badge>
-        </div>
-        <Input
-          id="weight-center"
-          type="range"
-          value={centerPosition}
-          min={1}
-          max={maxPosition}
-          step={1}
-          onChange={(event) => onChange(Number.parseInt(event.target.value, 10))}
-          className="h-3 cursor-pointer appearance-none rounded-full border-0 bg-transparent px-0 py-0 [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-0.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-background"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Pos 1</span>
-          <span>Pos {maxPosition}</span>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="center-weight">Center weight (1-100)</Label>
-          <div className="flex items-center gap-3">
+        {algorithmControls.includes("centerPosition") ? (
+          <>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="weight-center">Weight center level</Label>
+              <Badge variant="outline">
+                <Equal />
+                L{selectedLevelLabel}
+              </Badge>
+            </div>
             <Input
-              id="center-weight"
+              id="weight-center"
               type="range"
+              value={centerPosition}
               min={1}
-              max={100}
+              max={maxPosition}
               step={1}
-              value={centerWeight}
-              onChange={(event) =>
-                onCenterWeightChange(Number.parseInt(event.target.value, 10))
-              }
+              onChange={(event) => onChange(Number.parseInt(event.target.value, 10))}
               className="h-3 cursor-pointer appearance-none rounded-full border-0 bg-transparent px-0 py-0 [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-0.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-background"
             />
-            <Input
-              type="number"
-              min={1}
-              max={100}
-              value={centerWeight}
-              onChange={(event) =>
-                onCenterWeightChange(Number.parseInt(event.target.value, 10))
-              }
-              className="w-20"
-            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Pos 1</span>
+              <span>Pos {maxPosition}</span>
+            </div>
+          </>
+        ) : null}
+
+        {algorithmControls.includes("centerWeight") ? (
+          <div className="space-y-2">
+            <Label htmlFor="center-weight">Center weight (1-100)</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="center-weight"
+                type="range"
+                min={1}
+                max={100}
+                step={1}
+                value={centerWeight}
+                onChange={(event) =>
+                  onCenterWeightChange(Number.parseInt(event.target.value, 10))
+                }
+                className="h-3 cursor-pointer appearance-none rounded-full border-0 bg-transparent px-0 py-0 [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-0.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-background"
+              />
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={centerWeight}
+                onChange={(event) =>
+                  onCenterWeightChange(Number.parseInt(event.target.value, 10))
+                }
+                className="w-20"
+              />
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="space-y-2">
           <Label htmlFor="max-level">Max level (2-200)</Label>
