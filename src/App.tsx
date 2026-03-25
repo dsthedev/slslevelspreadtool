@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react"
 
-import { AlgorithmSelect } from "@/components/levelupchance/algorithm-select"
-import { DEFAULT_LEVEL_SPREAD } from "@/components/levelupchance/constants"
+import {
+  DEFAULT_CENTER_WEIGHT,
+  DEFAULT_LEVEL_SPREAD,
+  DEFAULT_MAX_LEVEL,
+  DEFAULT_STEP_AMOUNT,
+} from "@/components/levelupchance/constants"
 import { DatasetEditor } from "@/components/levelupchance/dataset-editor"
 import { OutputTable } from "@/components/levelupchance/output-table"
 import { SpreadChart } from "@/components/levelupchance/spread-chart"
@@ -9,7 +13,9 @@ import type { LevelEntry } from "@/components/levelupchance/types"
 import {
   applyCenteredWeights,
   distributionAlgorithms,
+  getAlgorithmControls,
   isDistributionAlgorithm,
+  type AlgorithmControl,
   type DistributionAlgorithm,
   formatLevelSpread,
   parseLevelSpread,
@@ -27,8 +33,11 @@ import {
 export function App() {
   const [rawInput, setRawInput] = useState(DEFAULT_LEVEL_SPREAD)
   const [sourceEntries, setSourceEntries] = useState<LevelEntry[]>(() =>
-    parseLevelSpread(DEFAULT_LEVEL_SPREAD)
+    buildLevelEntries(DEFAULT_MAX_LEVEL)
   )
+  const [maxLevel, setMaxLevel] = useState(DEFAULT_MAX_LEVEL)
+  const [centerWeight, setCenterWeight] = useState(DEFAULT_CENTER_WEIGHT)
+  const [stepAmount, setStepAmount] = useState(DEFAULT_STEP_AMOUNT)
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
     "exponential"
   )
@@ -55,8 +64,16 @@ export function App() {
       return []
     }
 
-    return applyCenteredWeights(sourceEntries, safeCenterPosition - 1, algorithm)
-  }, [sourceEntries, safeCenterPosition, algorithm])
+    return applyCenteredWeights(
+      sourceEntries,
+      safeCenterPosition - 1,
+      algorithm,
+      centerWeight,
+      { stepAmount }
+    )
+  }, [sourceEntries, safeCenterPosition, algorithm, centerWeight, stepAmount])
+
+  const algorithmControls: AlgorithmControl[] = getAlgorithmControls(algorithm)
 
   const selectedLevel =
     sourceEntries[Math.max(0, safeCenterPosition - 1)]?.level ??
@@ -72,19 +89,46 @@ export function App() {
       return
     }
 
-    setSourceEntries(parsed)
-    setCenterPosition((current) => clampPosition(current, parsed.length))
+    const inferredMaxLevel = clampMaxLevel(
+      Math.max(...parsed.map((entry) => entry.level), DEFAULT_MAX_LEVEL)
+    )
+
+    setMaxLevel(inferredMaxLevel)
+    setSourceEntries(buildLevelEntries(inferredMaxLevel))
+    setCenterPosition((current) => clampPosition(current, inferredMaxLevel))
     setError(null)
     setCopied(false)
   }
 
   const handleResetDefault = () => {
-    const parsedDefault = parseLevelSpread(DEFAULT_LEVEL_SPREAD)
     setRawInput(DEFAULT_LEVEL_SPREAD)
-    setSourceEntries(parsedDefault)
+    setMaxLevel(DEFAULT_MAX_LEVEL)
+    setCenterWeight(DEFAULT_CENTER_WEIGHT)
+    setStepAmount(DEFAULT_STEP_AMOUNT)
+    setSourceEntries(buildLevelEntries(DEFAULT_MAX_LEVEL))
     setCenterPosition(1)
     setCopied(false)
     setError(null)
+  }
+
+  const handleMaxLevelChange = (nextValue: number) => {
+    const clamped = clampMaxLevel(nextValue)
+    setMaxLevel(clamped)
+    setSourceEntries(buildLevelEntries(clamped))
+    setCenterPosition((current) => clampPosition(current, clamped))
+    setCopied(false)
+  }
+
+  const handleCenterWeightChange = (nextValue: number) => {
+    const clamped = clampCenterWeight(nextValue)
+    setCenterWeight(clamped)
+    setCopied(false)
+  }
+
+  const handleStepAmountChange = (nextValue: number) => {
+    const clamped = clampStepAmount(nextValue)
+    setStepAmount(clamped)
+    setCopied(false)
   }
 
   const handleCopy = async () => {
@@ -112,52 +156,95 @@ export function App() {
             <Badge variant="secondary">Levels: {sourceEntries.length}</Badge>
             <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
             <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
-            <AlgorithmSelect
-              value={algorithm}
-              options={distributionAlgorithms.map((item) => ({
+            {error ? <Badge variant="destructive">{error}</Badge> : null}
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
+          <div className="order-1">
+            <DatasetEditor
+              value={rawInput}
+              onChange={setRawInput}
+              onLoad={handleLoad}
+              onResetDefault={handleResetDefault}
+            />
+          </div>
+
+          <div className="order-2">
+            <WeightSlider
+              centerPosition={safeCenterPosition}
+              maxPosition={Math.max(1, sourceEntries.length)}
+              selectedLevelLabel={selectedLevel ?? 1}
+              centerWeight={centerWeight}
+              maxLevel={maxLevel}
+              algorithm={algorithm}
+              algorithmOptions={distributionAlgorithms.map((item) => ({
                 value: item.value,
                 label: item.label,
               }))}
-              onChange={(nextValue) => {
+              algorithmControls={algorithmControls}
+              stepAmount={stepAmount}
+              onChange={(position) => {
+                setCenterPosition(clampPosition(position, sourceEntries.length))
+                setCopied(false)
+              }}
+              onCenterWeightChange={handleCenterWeightChange}
+              onMaxLevelChange={handleMaxLevelChange}
+              onStepAmountChange={handleStepAmountChange}
+              onAlgorithmChange={(nextValue) => {
                 if (isDistributionAlgorithm(nextValue)) {
                   setAlgorithm(nextValue)
                   setCopied(false)
                 }
               }}
             />
-            {error ? <Badge variant="destructive">{error}</Badge> : null}
-          </CardContent>
-        </Card>
+          </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
-          <DatasetEditor
-            value={rawInput}
-            onChange={setRawInput}
-            onLoad={handleLoad}
-            onResetDefault={handleResetDefault}
-          />
-
-          <div className="flex flex-col gap-6">
-            <WeightSlider
-              centerPosition={safeCenterPosition}
-              maxPosition={Math.max(1, sourceEntries.length)}
-              selectedLevelLabel={selectedLevel ?? 1}
-              onChange={(position) => {
-                setCenterPosition(clampPosition(position, sourceEntries.length))
-                setCopied(false)
-              }}
-            />
+          <div className="order-3 xl:order-4">
             <SpreadChart
               entries={weightedEntries}
               centerPosition={safeCenterPosition}
             />
           </div>
-        </div>
 
-        <OutputTable entries={weightedEntries} onCopy={handleCopy} copied={copied} />
+          <div className="order-4 xl:order-3">
+            <OutputTable entries={weightedEntries} onCopy={handleCopy} copied={copied} />
+          </div>
+        </div>
       </div>
     </main>
   )
+}
+
+function buildLevelEntries(maxLevel: number): LevelEntry[] {
+  return Array.from({ length: maxLevel }, (_, index) => ({
+    level: index + 1,
+    value: 0,
+  }))
+}
+
+function clampMaxLevel(value: number) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_MAX_LEVEL
+  }
+
+  return Math.min(Math.max(Math.round(value), 2), 200)
+}
+
+function clampCenterWeight(value: number) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_CENTER_WEIGHT
+  }
+
+  return Math.min(Math.max(Math.round(value), 1), 100)
+}
+
+function clampStepAmount(value: number) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_STEP_AMOUNT
+  }
+
+  return Math.min(Math.max(Math.round(value * 10) / 10, 0.1), 10)
 }
 
 export default App

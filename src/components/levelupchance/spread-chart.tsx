@@ -34,25 +34,33 @@ function getBandColorClass(distanceFromCenter: number) {
 }
 
 export function SpreadChart({ entries, centerPosition }: SpreadChartProps) {
-  const maxValue = Math.max(...entries.map((entry) => entry.value), 1)
+  const maxScaleValue = 100
   const centerIndex = Math.max(centerPosition - 1, 0)
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Distribution Preview</CardTitle>
-        <CardDescription>Bars are normalized to the current peak value.</CardDescription>
+        <CardDescription>Bars use a fixed vertical scale from 0 to 100.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="relative h-52 overflow-hidden rounded-xl border border-border bg-linear-to-b from-primary/10 to-background p-3">
+        <div className="relative aspect-[1.5/1] w-full overflow-hidden rounded-xl border border-border bg-linear-to-b from-primary/10 to-background p-3">
+          <div className="pointer-events-none absolute inset-y-3 left-3 z-10 flex flex-col justify-between text-[10px] text-muted-foreground">
+            <span>100</span>
+            <span>50</span>
+            <span>0</span>
+          </div>
           {entries.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               Load a dataset to preview the distribution.
             </div>
           ) : (
-            <div className="flex h-full items-end gap-1">
+            <div className="ml-7 flex h-full items-end gap-1">
               {entries.map((entry, index) => {
-                const normalizedHeight = Math.max((entry.value / maxValue) * 100, 2)
+                const normalizedHeight = Math.min(
+                  Math.max((entry.value / maxScaleValue) * 100, 0),
+                  100
+                )
                 const distanceFromCenter = Math.abs(index - centerIndex)
 
                 return (
