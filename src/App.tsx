@@ -159,8 +159,8 @@ export function App() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
-          <div className="order-1">
+        <div className="grid gap-6 xl:auto-rows-fr xl:grid-cols-[1.15fr_1fr]">
+          <div className="order-1 h-full">
             <DatasetEditor
               value={rawInput}
               onChange={setRawInput}
@@ -169,7 +169,7 @@ export function App() {
             />
           </div>
 
-          <div className="order-2">
+          <div className="order-2 h-full">
             <WeightSlider
               centerPosition={safeCenterPosition}
               maxPosition={Math.max(1, sourceEntries.length)}
@@ -199,7 +199,7 @@ export function App() {
             />
           </div>
 
-          <div className="order-3 xl:order-4">
+          <div className="order-3 h-full xl:order-4">
             <SpreadChart
               entries={weightedEntries}
               centerPosition={safeCenterPosition}
@@ -207,7 +207,7 @@ export function App() {
             />
           </div>
 
-          <div className="order-4 xl:order-3">
+          <div className="order-4 h-full xl:order-3">
             <OutputTable entries={weightedEntries} onCopy={handleCopy} copied={copied} />
           </div>
         </div>

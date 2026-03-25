@@ -26,27 +26,27 @@ type OutputTableProps = {
 
 export function OutputTable({ entries, onCopy, copied }: OutputTableProps) {
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>3. Copy New Spread</CardTitle>
         <CardDescription>
           Use this list directly in your next paste destination.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="max-h-80 overflow-auto rounded-xl border border-border">
-          <Table>
+      <CardContent className="flex flex-1 flex-col gap-3">
+        <div className="max-h-72 overflow-auto rounded-lg border border-border/80">
+          <Table className="text-sm">
             <TableHeader>
               <TableRow>
-                <TableHead>Level</TableHead>
-                <TableHead className="text-right">Weight</TableHead>
+                <TableHead className="py-2">Level</TableHead>
+                <TableHead className="py-2 text-right">Weight</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.map((entry) => (
                 <TableRow key={entry.level}>
-                  <TableCell>L{entry.level}</TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="py-2">L{entry.level}</TableCell>
+                  <TableCell className="py-2 text-right font-mono text-lg leading-none font-semibold">
                     {entry.value.toFixed(4)}
                   </TableCell>
                 </TableRow>

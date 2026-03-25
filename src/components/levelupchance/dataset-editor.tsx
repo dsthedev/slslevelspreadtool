@@ -36,9 +36,10 @@ export function DatasetEditor({
         <Label htmlFor="spread-input">Level spread input</Label>
         <Textarea
           id="spread-input"
+          rows={9}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-64 font-mono text-sm"
+          className="min-h-40 resize-y font-mono text-sm"
           placeholder="1: 20"
         />
         <div className="flex flex-wrap gap-2">

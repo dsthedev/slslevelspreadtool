@@ -50,7 +50,7 @@ export function WeightSlider({
   onAlgorithmChange,
 }: WeightSliderProps) {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>2. Adjustify</CardTitle>
         <CardDescription>

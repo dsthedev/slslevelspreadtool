@@ -51,13 +51,13 @@ export function SpreadChart({
   const centerIndex = Math.max(centerPosition - 1, 0)
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>Distribution Preview</CardTitle>
         <CardDescription>Bars use a fixed vertical scale from 0 to 100.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="relative aspect-[1.5/1] w-full overflow-hidden rounded-xl border border-border bg-linear-to-b from-primary/10 to-background p-3">
+      <CardContent className="flex flex-1">
+        <div className="relative h-full min-h-64 w-full overflow-hidden rounded-xl border border-border bg-linear-to-b from-primary/10 to-background p-3">
           <div className="pointer-events-none absolute inset-y-3 left-3 z-10 flex flex-col justify-between text-[10px] text-muted-foreground">
             <span>100</span>
             <span>50</span>
