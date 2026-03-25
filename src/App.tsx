@@ -146,10 +146,9 @@ export function App() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <Card className="border border-border/80 bg-card/85 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-2xl">LevelUpChance Editor</CardTitle>
+            <CardTitle className="text-2xl">SLS Level Spread Tool</CardTitle>
             <CardDescription>
-              Paste your current spread, move the weight center, and copy a fresh
-              output list.
+              Upload a level spread dataset, adjust the distribution settings, and copy the modified spread for use in your SLS configuration.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center gap-2">
