@@ -27,6 +27,11 @@ export const distributionAlgorithms = [
     label: "Even-ish",
     controls: [],
   },
+  {
+    value: "fibonacci",
+    label: "Fibonacci (from max level)",
+    controls: [],
+  },
 ] as const
 
 export type DistributionAlgorithm =
@@ -119,10 +124,31 @@ function getWeightByAlgorithm(
       const step = 99 / maxIndex
       return Math.max(1, 100 - step * index)
     }
+    case "fibonacci": {
+      const distanceFromMax = Math.max(totalEntries - 1 - index, 0)
+      return getFibonacciValue(distanceFromMax)
+    }
     case "exponential":
     default:
       return centerWeight * DECAY_FACTOR ** distance
   }
+}
+
+function getFibonacciValue(position: number) {
+  if (position <= 1) {
+    return 1
+  }
+
+  let previous = 1
+  let current = 1
+
+  for (let step = 2; step <= position; step += 1) {
+    const next = previous + current
+    previous = current
+    current = next
+  }
+
+  return current
 }
 
 function sanitizeStepAmount(value: number | undefined) {
