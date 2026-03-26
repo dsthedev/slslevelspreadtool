@@ -194,6 +194,28 @@ export function App() {
     setCopied(false)
   }
 
+  const handleRawInputChange = (nextValue: string) => {
+    setRawInput(nextValue)
+
+    if (algorithm !== "manual") {
+      return
+    }
+
+    const parsed = parseLevelSpread(nextValue)
+
+    if (parsed.length === 0) {
+      return
+    }
+
+    const inferredMaxLevel = clampMaxLevel(Math.max(...parsed.map((entry) => entry.level)))
+
+    setMaxLevel(inferredMaxLevel)
+    setSourceEntries(buildEntriesFromParsed(parsed, inferredMaxLevel))
+    setCenterPosition((current) => clampPosition(current, inferredMaxLevel))
+    setCopied(false)
+    setError(null)
+  }
+
   const handleResetDefault = () => {
     setRawInput(DEFAULT_LEVEL_SPREAD)
     setMaxLevel(DEFAULT_MAX_LEVEL)
@@ -428,7 +450,7 @@ export function App() {
           <div className="h-full">
             <ManualInputCard
               value={rawInput}
-              onChange={setRawInput}
+              onChange={handleRawInputChange}
               onLoad={handleLoad}
               onResetDefault={handleResetDefault}
             />
