@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import {
   DEFAULT_CENTER_WEIGHT,
@@ -8,6 +8,12 @@ import {
 } from "@/components/levelupchance/constants"
 import { DatasetEditor } from "@/components/levelupchance/dataset-editor"
 import { OutputTable } from "@/components/levelupchance/output-table"
+import {
+  loadSavedProfilesStore,
+  saveSavedProfilesStore,
+  type SavedProfile,
+  type SavedProfileDraft,
+} from "@/components/levelupchance/profile-storage"
 import { SpreadChart } from "@/components/levelupchance/spread-chart"
 import type { LevelEntry } from "@/components/levelupchance/types"
 import {
@@ -43,6 +49,9 @@ export function App() {
     "exponential"
   )
   const [normalizeToHundred, setNormalizeToHundred] = useState(false)
+  const [savedProfiles, setSavedProfiles] = useState<SavedProfile[]>([])
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null)
+  const [hasLoadedProfiles, setHasLoadedProfiles] = useState(false)
   const [centerPosition, setCenterPosition] = useState(1)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +69,21 @@ export function App() {
   }
 
   const safeCenterPosition = clampPosition(centerPosition, sourceEntries.length)
+
+  useEffect(() => {
+    const stored = loadSavedProfilesStore()
+    setSavedProfiles(stored.profiles)
+    setSelectedProfileId(stored.lastSelectedProfileId)
+    setHasLoadedProfiles(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hasLoadedProfiles) {
+      return
+    }
+
+    saveSavedProfilesStore(savedProfiles, selectedProfileId)
+  }, [savedProfiles, selectedProfileId, hasLoadedProfiles])
 
   const weightedEntries = useMemo(() => {
     if (sourceEntries.length === 0) {
@@ -95,6 +119,34 @@ export function App() {
     sourceEntries[0]?.level
 
   const peakValue = weightedEntries[safeCenterPosition - 1]?.value ?? 0
+
+  const applyProfileDraft = (draft: SavedProfileDraft) => {
+    const clampedMaxLevel = clampMaxLevel(draft.maxLevel)
+    const resolvedAlgorithm = isDistributionAlgorithm(draft.algorithm)
+      ? draft.algorithm
+      : "exponential"
+
+    setRawInput(draft.rawInput)
+    setMaxLevel(clampedMaxLevel)
+    setCenterWeight(clampCenterWeight(draft.centerWeight))
+    setStepAmount(clampStepAmount(draft.stepAmount))
+    setAlgorithm(resolvedAlgorithm)
+    setNormalizeToHundred(draft.normalizeToHundred)
+    setSourceEntries(buildLevelEntries(clampedMaxLevel))
+    setCenterPosition(clampPosition(draft.centerPosition, clampedMaxLevel))
+    setCopied(false)
+    setError(null)
+  }
+
+  const createProfileDraft = (): SavedProfileDraft => ({
+    rawInput,
+    maxLevel,
+    centerWeight,
+    stepAmount,
+    algorithm,
+    centerPosition: safeCenterPosition,
+    normalizeToHundred,
+  })
 
   const handleLoad = () => {
     const parsed = parseLevelSpread(rawInput)
@@ -157,6 +209,89 @@ export function App() {
     setCopied(true)
   }
 
+  const handleSelectProfile = (profileId: string) => {
+    if (!profileId) {
+      setSelectedProfileId(null)
+      return
+    }
+
+    const selectedProfile = savedProfiles.find((profile) => profile.id === profileId)
+
+    if (!selectedProfile) {
+      return
+    }
+
+    setSelectedProfileId(selectedProfile.id)
+    applyProfileDraft(selectedProfile.data)
+  }
+
+  const handleSaveNewProfile = () => {
+    const requestedName = window.prompt("Profile name", getSuggestedProfileName(savedProfiles))
+
+    if (requestedName === null) {
+      return
+    }
+
+    const trimmedName = requestedName.trim()
+
+    if (!trimmedName) {
+      return
+    }
+
+    const now = new Date().toISOString()
+    const nextProfile: SavedProfile = {
+      id: createProfileId(),
+      name: getUniqueProfileName(trimmedName, savedProfiles),
+      createdAt: now,
+      updatedAt: now,
+      data: createProfileDraft(),
+    }
+
+    setSavedProfiles((current) => [...current, nextProfile])
+    setSelectedProfileId(nextProfile.id)
+  }
+
+  const handleOverwriteProfile = () => {
+    if (!selectedProfileId) {
+      return
+    }
+
+    setSavedProfiles((current) =>
+      current.map((profile) =>
+        profile.id === selectedProfileId
+          ? {
+              ...profile,
+              updatedAt: new Date().toISOString(),
+              data: createProfileDraft(),
+            }
+          : profile
+      )
+    )
+  }
+
+  const handleDeleteProfile = () => {
+    if (!selectedProfileId) {
+      return
+    }
+
+    const selectedProfile = savedProfiles.find((profile) => profile.id === selectedProfileId)
+
+    if (!selectedProfile) {
+      return
+    }
+
+    const confirmed = window.confirm(`Delete saved profile "${selectedProfile.name}"?`)
+
+    if (!confirmed) {
+      return
+    }
+
+    setSavedProfiles((current) =>
+      current.filter((profile) => profile.id !== selectedProfileId)
+    )
+    setSelectedProfileId(null)
+  }
+
   return (
     <main className="min-h-svh bg-[radial-gradient(circle_at_20%_10%,rgba(59,130,246,0.25),transparent_40%),radial-gradient(circle_at_85%_90%,rgba(16,185,129,0.2),transparent_35%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -195,9 +330,18 @@ export function App() {
           <div className="order-1 h-full">
             <DatasetEditor
               value={rawInput}
+              savedProfiles={savedProfiles.map((profile) => ({
+                id: profile.id,
+                name: profile.name,
+              }))}
+              selectedProfileId={selectedProfileId}
               onChange={setRawInput}
               onLoad={handleLoad}
               onResetDefault={handleResetDefault}
+              onSelectProfile={handleSelectProfile}
+              onSaveNewProfile={handleSaveNewProfile}
+              onOverwriteProfile={handleOverwriteProfile}
+              onDeleteProfile={handleDeleteProfile}
             />
           </div>
 
@@ -285,3 +429,31 @@ function clampStepAmount(value: number) {
 }
 
 export default App
+
+function createProfileId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
+
+  return `profile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function getSuggestedProfileName(profiles: SavedProfile[]) {
+  return `Profile ${profiles.length + 1}`
+}
+
+function getUniqueProfileName(name: string, profiles: SavedProfile[]) {
+  const normalizedName = name.trim()
+
+  if (!profiles.some((profile) => profile.name === normalizedName)) {
+    return normalizedName
+  }
+
+  let suffix = 2
+
+  while (profiles.some((profile) => profile.name === `${normalizedName} (${suffix})`)) {
+    suffix += 1
+  }
+
+  return `${normalizedName} (${suffix})`
+}
