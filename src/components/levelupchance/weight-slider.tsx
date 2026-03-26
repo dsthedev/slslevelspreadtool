@@ -4,6 +4,7 @@ import type {
   AlgorithmControl,
   DistributionAlgorithm,
 } from "@/components/levelupchance/utils"
+import { algorithmDescriptions } from "@/components/levelupchance/utils"
 import { AlgorithmSelect } from "@/components/levelupchance/algorithm-select"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -49,6 +50,8 @@ export function WeightSlider({
   onStepAmountChange,
   onAlgorithmChange,
 }: WeightSliderProps) {
+  const selectedAlgorithmDescription = algorithmDescriptions[algorithm]
+
   return (
     <Card className="h-full">
       <CardHeader>
@@ -61,6 +64,9 @@ export function WeightSlider({
         <AlgorithmSelect
           value={algorithm}
           options={algorithmOptions}
+          infoTitle={selectedAlgorithmDescription.title}
+          infoSummary={selectedAlgorithmDescription.summary}
+          infoGameplay={selectedAlgorithmDescription.gameplay}
           onChange={(nextValue) => onAlgorithmChange(nextValue as DistributionAlgorithm)}
         />
         {algorithmControls.includes("centerPosition") ? (
