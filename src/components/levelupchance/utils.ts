@@ -8,6 +8,11 @@ export type AlgorithmControl =
 
 export const distributionAlgorithms = [
   {
+    value: "manual",
+    label: "Manual (no algorithm)",
+    controls: [],
+  },
+  {
     value: "exponential",
     label: "Exponential (original)",
     controls: ["centerPosition", "centerWeight"],
@@ -63,6 +68,13 @@ export type AlgorithmDescription = {
 
 export const algorithmDescriptions: Record<DistributionAlgorithm, AlgorithmDescription> =
   {
+    manual: {
+      title: "Manual (no algorithm)",
+      summary:
+        "Uses the loaded level:value pairs exactly as entered, without generating a new curve.",
+      gameplay:
+        "Best when you want full manual control or to preserve an imported spread as-is.",
+    },
     exponential: {
       title: "Exponential (original)",
       summary:

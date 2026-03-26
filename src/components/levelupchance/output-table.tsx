@@ -32,7 +32,7 @@ export function OutputTable({ entries, onCopy, copied }: OutputTableProps) {
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
-        <CardTitle>3. Copy New Spread</CardTitle>
+        <CardTitle>5. Copy Spread</CardTitle>
         <CardDescription>
           Shows raw thresholds and the actual effective spawn chance per level.
         </CardDescription>

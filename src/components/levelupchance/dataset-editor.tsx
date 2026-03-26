@@ -25,27 +25,39 @@ type DatasetEditorProps = {
   onDeleteAllProfiles: () => void
 }
 
-export function DatasetEditor({
-  value,
+type ProfileManagerCardProps = Pick<
+  DatasetEditorProps,
+  | "savedProfiles"
+  | "selectedProfileId"
+  | "onSelectProfile"
+  | "onSaveNewProfile"
+  | "onOverwriteProfile"
+  | "onDeleteProfile"
+  | "onDeleteAllProfiles"
+>
+
+type ManualInputCardProps = Pick<
+  DatasetEditorProps,
+  "value" | "onChange" | "onLoad" | "onResetDefault"
+>
+
+export function ProfileManagerCard({
   savedProfiles,
   selectedProfileId,
-  onChange,
-  onLoad,
-  onResetDefault,
   onSelectProfile,
   onSaveNewProfile,
   onOverwriteProfile,
   onDeleteProfile,
   onDeleteAllProfiles,
-}: DatasetEditorProps) {
+}: ProfileManagerCardProps) {
   const hasSelectedProfile = selectedProfileId !== null
 
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>1. Load Profile</CardTitle>
+        <CardTitle>1. Profile Manager</CardTitle>
         <CardDescription>
-          Load a saved profile first, or paste level:value pairs manually below.
+          Load, save, overwrite, or clear profiles for quick A/B testing.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex h-full flex-col gap-4">
@@ -94,7 +106,26 @@ export function DatasetEditor({
             </Button>
           </div>
         </div>
+      </CardContent>
+    </Card>
+  )
+}
 
+export function ManualInputCard({
+  value,
+  onChange,
+  onLoad,
+  onResetDefault,
+}: ManualInputCardProps) {
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>4. Manual Input</CardTitle>
+        <CardDescription>
+          Paste level:value pairs to build or tweak a spread directly.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex h-full flex-col gap-4">
         <Label htmlFor="spread-input">Level spread input</Label>
         <Textarea
           id="spread-input"
@@ -115,5 +146,39 @@ export function DatasetEditor({
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+export function DatasetEditor({
+  value,
+  savedProfiles,
+  selectedProfileId,
+  onChange,
+  onLoad,
+  onResetDefault,
+  onSelectProfile,
+  onSaveNewProfile,
+  onOverwriteProfile,
+  onDeleteProfile,
+  onDeleteAllProfiles,
+}: DatasetEditorProps) {
+  return (
+    <div className="grid gap-4">
+      <ProfileManagerCard
+        savedProfiles={savedProfiles}
+        selectedProfileId={selectedProfileId}
+        onSelectProfile={onSelectProfile}
+        onSaveNewProfile={onSaveNewProfile}
+        onOverwriteProfile={onOverwriteProfile}
+        onDeleteProfile={onDeleteProfile}
+        onDeleteAllProfiles={onDeleteAllProfiles}
+      />
+      <ManualInputCard
+        value={value}
+        onChange={onChange}
+        onLoad={onLoad}
+        onResetDefault={onResetDefault}
+      />
+    </div>
   )
 }

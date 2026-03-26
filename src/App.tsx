@@ -6,7 +6,10 @@ import {
   DEFAULT_MAX_LEVEL,
   DEFAULT_STEP_AMOUNT,
 } from "@/components/levelupchance/constants"
-import { DatasetEditor } from "@/components/levelupchance/dataset-editor"
+import {
+  ManualInputCard,
+  ProfileManagerCard,
+} from "@/components/levelupchance/dataset-editor"
 import { OutputTable } from "@/components/levelupchance/output-table"
 import {
   loadSavedProfilesStore,
@@ -29,7 +32,6 @@ import {
   parseLevelSpread,
 } from "@/components/levelupchance/utils"
 import { WeightSlider } from "@/components/levelupchance/weight-slider"
-import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -91,6 +93,18 @@ export function App() {
   const weightedEntries = useMemo(() => {
     if (sourceEntries.length === 0) {
       return []
+    }
+
+    if (algorithm === "manual") {
+      if (normalizationMode === "weight") {
+        return normalizeLevelWeights(sourceEntries, 100)
+      }
+
+      if (normalizationMode === "chance") {
+        return normalizeEffectiveLevelWeights(sourceEntries, 100)
+      }
+
+      return sourceEntries
     }
 
     const generated = applyCenteredWeights(
@@ -165,12 +179,11 @@ export function App() {
       return
     }
 
-    const inferredMaxLevel = clampMaxLevel(
-      Math.max(...parsed.map((entry) => entry.level), DEFAULT_MAX_LEVEL)
-    )
+    const inferredMaxLevel = clampMaxLevel(Math.max(...parsed.map((entry) => entry.level)))
 
     setMaxLevel(inferredMaxLevel)
-    setSourceEntries(buildLevelEntries(inferredMaxLevel))
+    setSourceEntries(buildEntriesFromParsed(parsed, inferredMaxLevel))
+    setAlgorithm("manual")
     setCenterPosition((current) => clampPosition(current, inferredMaxLevel))
     setError(null)
     setCopied(false)
@@ -191,7 +204,7 @@ export function App() {
   const handleMaxLevelChange = (nextValue: number) => {
     const clamped = clampMaxLevel(nextValue)
     setMaxLevel(clamped)
-    setSourceEntries(buildLevelEntries(clamped))
+    setSourceEntries((current) => resizeLevelEntries(current, clamped))
     setCenterPosition((current) => clampPosition(current, clamped))
     setCopied(false)
   }
@@ -336,32 +349,22 @@ export function App() {
               <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
                 BepInEx/StarLevelSystem/LevelSettings.yaml
               </code>
-              . When a creature spawns, the mod makes a <strong>single 0–100 roll</strong> and selects the highest level whose chance value the roll falls within — checking from the highest level down.
+              . When a creature spawns, the mod makes a <strong>single 0-100 roll</strong> and selects the highest level whose chance value the roll falls within - checking from the highest level down.
               For example, with{" "}
               <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">1: 20, 2: 10, 3: 5</code>
-              {" "}a roll of 8 lands within level 2 (≤ 10) but not level 3 (≤ 5), so the creature is 2-star. A roll of 50 exceeds all thresholds — the creature spawns at base level (no stars). Level 1 is not required to be 100; its value controls how often any leveled creature appears at all.
+              {" "}a roll of 8 lands within level 2 (&le; 10) but not level 3 (&le; 5), so the creature is 2-star. A roll of 50 exceeds all thresholds - the creature spawns at base level (no stars). Level 1 is not required to be 100; its value controls how often any leveled creature appears at all.
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">Levels: {sourceEntries.length}</Badge>
-              <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
-              <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
-              {error ? <Badge variant="destructive">{error}</Badge> : null}
-            </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 xl:auto-rows-fr xl:grid-cols-[1.15fr_1fr]">
-          <div className="order-1 h-full">
-            <DatasetEditor
-              value={rawInput}
+        <div className="grid gap-6 xl:grid-cols-2">
+          <div className="xl:col-span-2">
+            <ProfileManagerCard
               savedProfiles={savedProfiles.map((profile) => ({
                 id: profile.id,
                 name: profile.name,
               }))}
               selectedProfileId={selectedProfileId}
-              onChange={setRawInput}
-              onLoad={handleLoad}
-              onResetDefault={handleResetDefault}
               onSelectProfile={handleSelectProfile}
               onSaveNewProfile={handleSaveNewProfile}
               onOverwriteProfile={handleOverwriteProfile}
@@ -370,7 +373,7 @@ export function App() {
             />
           </div>
 
-          <div className="order-2 h-full">
+          <div className="h-full">
             <WeightSlider
               centerPosition={safeCenterPosition}
               maxPosition={Math.max(1, sourceEntries.length)}
@@ -405,15 +408,28 @@ export function App() {
             />
           </div>
 
-          <div className="order-3 h-full xl:order-4">
+          <div className="h-full">
             <SpreadChart
               entries={weightedEntries}
               centerPosition={safeCenterPosition}
               algorithm={algorithm}
+              levelsCount={sourceEntries.length}
+              selectedLevel={selectedLevel ?? null}
+              peakValue={peakValue}
+              error={error}
             />
           </div>
 
-          <div className="order-4 h-full xl:order-3">
+          <div className="h-full">
+            <ManualInputCard
+              value={rawInput}
+              onChange={setRawInput}
+              onLoad={handleLoad}
+              onResetDefault={handleResetDefault}
+            />
+          </div>
+
+          <div className="h-full">
             <OutputTable entries={weightedEntries} onCopy={handleCopy} copied={copied} />
           </div>
         </div>
@@ -427,6 +443,32 @@ function buildLevelEntries(maxLevel: number): LevelEntry[] {
     level: index + 1,
     value: 0,
   }))
+}
+
+function buildEntriesFromParsed(parsed: LevelEntry[], maxLevel: number): LevelEntry[] {
+  const byLevel = new Map(parsed.map((entry) => [entry.level, entry.value]))
+
+  return Array.from({ length: maxLevel }, (_, index) => {
+    const level = index + 1
+
+    return {
+      level,
+      value: byLevel.get(level) ?? 0,
+    }
+  })
+}
+
+function resizeLevelEntries(entries: LevelEntry[], maxLevel: number): LevelEntry[] {
+  const byLevel = new Map(entries.map((entry) => [entry.level, entry.value]))
+
+  return Array.from({ length: maxLevel }, (_, index) => {
+    const level = index + 1
+
+    return {
+      level,
+      value: byLevel.get(level) ?? 0,
+    }
+  })
 }
 
 function clampMaxLevel(value: number) {

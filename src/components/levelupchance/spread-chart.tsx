@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
@@ -21,6 +22,10 @@ type SpreadChartProps = {
   entries: LevelEntry[]
   centerPosition: number
   algorithm: DistributionAlgorithm
+  levelsCount: number
+  selectedLevel: number | null
+  peakValue: number
+  error: string | null
 }
 
 function getBandColorClass(
@@ -59,6 +64,10 @@ export function SpreadChart({
   entries,
   centerPosition,
   algorithm,
+  levelsCount,
+  selectedLevel,
+  peakValue,
+  error,
 }: SpreadChartProps) {
   const maxScaleValue = 100
   const centerIndex = Math.max(centerPosition - 1, 0)
@@ -78,8 +87,14 @@ export function SpreadChart({
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
-        <CardTitle>Distribution Preview</CardTitle>
+        <CardTitle>3. Dist Preview</CardTitle>
         <CardDescription>Bars use a fixed vertical scale from 0 to 100.</CardDescription>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">Levels: {levelsCount}</Badge>
+          <Badge variant="secondary">Center: L{selectedLevel ?? "-"}</Badge>
+          <Badge variant="secondary">Peak: {peakValue.toFixed(4)}</Badge>
+          {error ? <Badge variant="destructive">{error}</Badge> : null}
+        </div>
         {hasUnreachableEntries ? (
           <p className="text-sm text-amber-700 dark:text-amber-400">
             Warning: some levels currently have 0% effective chance because a
