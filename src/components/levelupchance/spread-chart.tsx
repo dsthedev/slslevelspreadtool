@@ -1,5 +1,8 @@
 import type { LevelEntry } from "@/components/levelupchance/types"
-import type { DistributionAlgorithm } from "@/components/levelupchance/utils"
+import {
+  getEffectiveLevelChances,
+  type DistributionAlgorithm,
+} from "@/components/levelupchance/utils"
 import {
   Card,
   CardContent,
@@ -19,8 +22,13 @@ type SpreadChartProps = {
 
 function getBandColorClass(
   algorithm: DistributionAlgorithm,
-  distanceFromCenter: number
+  distanceFromCenter: number,
+  isUnreachable: boolean
 ) {
+  if (isUnreachable) {
+    return "bg-slate-400"
+  }
+
   if (algorithm === "evenish") {
     return "bg-indigo-500"
   }
@@ -53,12 +61,24 @@ export function SpreadChart({
   const centerIndex = Math.max(centerPosition - 1, 0)
   const totalWeight = entries.reduce((sum, entry) => sum + entry.value, 0)
   const totalWeightFieldStyle = getTotalWeightFieldStyle(totalWeight)
+  const effectiveEntries = getEffectiveLevelChances(entries)
+  const unreachableEntries = effectiveEntries.filter(
+    (entry) => entry.value > 0 && entry.effectiveChance <= 0
+  )
+  const hasUnreachableEntries = unreachableEntries.length > 0
 
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>Distribution Preview</CardTitle>
         <CardDescription>Bars use a fixed vertical scale from 0 to 100.</CardDescription>
+        {hasUnreachableEntries ? (
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            Warning: some levels currently have 0% effective chance because a
+            higher level threshold fully covers them during the top-down roll
+            check. Those unreachable levels are shown in gray.
+          </p>
+        ) : null}
       </CardHeader>
       <CardContent className="flex flex-1">
         <div className="relative h-full min-h-64 w-full overflow-hidden rounded-xl border border-border bg-linear-to-b from-primary/10 to-background p-3">
@@ -92,6 +112,11 @@ export function SpreadChart({
                   100
                 )
                 const distanceFromCenter = Math.abs(index - centerIndex)
+                const effectiveEntry = effectiveEntries[index]
+                const isUnreachable =
+                  effectiveEntry !== undefined &&
+                  effectiveEntry.value > 0 &&
+                  effectiveEntry.effectiveChance <= 0
 
                 return (
                   <div
@@ -101,10 +126,14 @@ export function SpreadChart({
                     <div
                       className={cn(
                         "w-full rounded-t-md transition-all duration-200 hover:brightness-110",
-                        getBandColorClass(algorithm, distanceFromCenter)
+                        getBandColorClass(
+                          algorithm,
+                          distanceFromCenter,
+                          isUnreachable
+                        )
                       )}
                       style={{ height: `${normalizedHeight}%`, maxHeight: "100%" }}
-                      title={`L${entry.level}: ${entry.value.toFixed(4)}`}
+                      title={`L${entry.level}: ${entry.value.toFixed(4)} (${effectiveEntry?.effectiveChance.toFixed(4) ?? "0.0000"}% effective)`}
                     />
                   </div>
                 )
