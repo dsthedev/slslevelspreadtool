@@ -274,6 +274,31 @@ export function normalizeLevelWeights(
   }))
 }
 
+export function normalizeEffectiveLevelWeights(
+  entries: LevelEntry[],
+  targetTotal = 100
+): LevelEntry[] {
+  if (!Number.isFinite(targetTotal) || targetTotal <= 0 || entries.length === 0) {
+    return entries
+  }
+
+  const currentEffectiveTotal = getEffectiveLevelChances(entries).reduce(
+    (sum, entry) => sum + entry.effectiveChance,
+    0
+  )
+
+  if (!Number.isFinite(currentEffectiveTotal) || currentEffectiveTotal <= 0) {
+    return entries
+  }
+
+  const scale = targetTotal / currentEffectiveTotal
+
+  return entries.map((entry) => ({
+    level: entry.level,
+    value: sanitizeWeight(entry.value) * scale,
+  }))
+}
+
 export function getEffectiveLevelChances(entries: LevelEntry[]): LevelChanceEntry[] {
   let highestCoveredThreshold = 0
 

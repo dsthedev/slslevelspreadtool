@@ -22,6 +22,7 @@ type DatasetEditorProps = {
   onSaveNewProfile: () => void
   onOverwriteProfile: () => void
   onDeleteProfile: () => void
+  onDeleteAllProfiles: () => void
 }
 
 export function DatasetEditor({
@@ -35,6 +36,7 @@ export function DatasetEditor({
   onSaveNewProfile,
   onOverwriteProfile,
   onDeleteProfile,
+  onDeleteAllProfiles,
 }: DatasetEditorProps) {
   const hasSelectedProfile = selectedProfileId !== null
 
@@ -81,6 +83,14 @@ export function DatasetEditor({
               onClick={onDeleteProfile}
             >
               Delete
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={savedProfiles.length === 0}
+              onClick={onDeleteAllProfiles}
+            >
+              Delete All
             </Button>
           </div>
         </div>

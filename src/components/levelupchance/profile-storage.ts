@@ -11,6 +11,8 @@ export type SavedProfileDraft = {
   algorithm: DistributionAlgorithm
   centerPosition: number
   normalizeToHundred: boolean
+  normalizeEffectiveToHundred?: boolean
+  normalizationMode?: "none" | "weight" | "chance"
 }
 
 export type SavedProfile = {
@@ -125,6 +127,12 @@ function isSavedProfileDraft(value: unknown): value is SavedProfileDraft {
     typeof candidate.stepAmount === "number" &&
     typeof candidate.algorithm === "string" &&
     typeof candidate.centerPosition === "number" &&
-    typeof candidate.normalizeToHundred === "boolean"
+    typeof candidate.normalizeToHundred === "boolean" &&
+    (candidate.normalizeEffectiveToHundred === undefined ||
+      typeof candidate.normalizeEffectiveToHundred === "boolean") &&
+    (candidate.normalizationMode === undefined ||
+      candidate.normalizationMode === "none" ||
+      candidate.normalizationMode === "weight" ||
+      candidate.normalizationMode === "chance")
   )
 }

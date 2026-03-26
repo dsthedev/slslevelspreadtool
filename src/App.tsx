@@ -21,6 +21,7 @@ import {
   distributionAlgorithms,
   getAlgorithmControls,
   isDistributionAlgorithm,
+  normalizeEffectiveLevelWeights,
   normalizeLevelWeights,
   type AlgorithmControl,
   type DistributionAlgorithm,
@@ -48,7 +49,9 @@ export function App() {
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
     "exponential"
   )
-  const [normalizeToHundred, setNormalizeToHundred] = useState(false)
+  const [normalizationMode, setNormalizationMode] = useState<
+    "none" | "weight" | "chance"
+  >("none")
   const [savedProfiles, setSavedProfiles] = useState<SavedProfile[]>([])
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null)
   const [hasLoadedProfiles, setHasLoadedProfiles] = useState(false)
@@ -98,18 +101,22 @@ export function App() {
       { stepAmount }
     )
 
-    if (!normalizeToHundred) {
-      return generated
+    if (normalizationMode === "weight") {
+      return normalizeLevelWeights(generated, 100)
     }
 
-    return normalizeLevelWeights(generated, 100)
+    if (normalizationMode === "chance") {
+      return normalizeEffectiveLevelWeights(generated, 100)
+    }
+
+    return generated
   }, [
     sourceEntries,
     safeCenterPosition,
     algorithm,
     centerWeight,
     stepAmount,
-    normalizeToHundred,
+    normalizationMode,
   ])
 
   const algorithmControls: AlgorithmControl[] = getAlgorithmControls(algorithm)
@@ -131,7 +138,7 @@ export function App() {
     setCenterWeight(clampCenterWeight(draft.centerWeight))
     setStepAmount(clampStepAmount(draft.stepAmount))
     setAlgorithm(resolvedAlgorithm)
-    setNormalizeToHundred(draft.normalizeToHundred)
+    setNormalizationMode(resolveNormalizationMode(draft))
     setSourceEntries(buildLevelEntries(clampedMaxLevel))
     setCenterPosition(clampPosition(draft.centerPosition, clampedMaxLevel))
     setCopied(false)
@@ -145,7 +152,9 @@ export function App() {
     stepAmount,
     algorithm,
     centerPosition: safeCenterPosition,
-    normalizeToHundred,
+    normalizeToHundred: normalizationMode === "weight",
+    normalizeEffectiveToHundred: normalizationMode === "chance",
+    normalizationMode,
   })
 
   const handleLoad = () => {
@@ -172,7 +181,7 @@ export function App() {
     setMaxLevel(DEFAULT_MAX_LEVEL)
     setCenterWeight(DEFAULT_CENTER_WEIGHT)
     setStepAmount(DEFAULT_STEP_AMOUNT)
-    setNormalizeToHundred(false)
+    setNormalizationMode("none")
     setSourceEntries(buildLevelEntries(DEFAULT_MAX_LEVEL))
     setCenterPosition(1)
     setCopied(false)
@@ -292,6 +301,21 @@ export function App() {
     setSelectedProfileId(null)
   }
 
+  const handleDeleteAllProfiles = () => {
+    if (savedProfiles.length === 0) {
+      return
+    }
+
+    const confirmed = window.confirm("Delete all saved profiles?")
+
+    if (!confirmed) {
+      return
+    }
+
+    setSavedProfiles([])
+    setSelectedProfileId(null)
+  }
+
   return (
     <main className="min-h-svh bg-[radial-gradient(circle_at_20%_10%,rgba(59,130,246,0.25),transparent_40%),radial-gradient(circle_at_85%_90%,rgba(16,185,129,0.2),transparent_35%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -342,6 +366,7 @@ export function App() {
               onSaveNewProfile={handleSaveNewProfile}
               onOverwriteProfile={handleOverwriteProfile}
               onDeleteProfile={handleDeleteProfile}
+              onDeleteAllProfiles={handleDeleteAllProfiles}
             />
           </div>
 
@@ -359,7 +384,7 @@ export function App() {
               }))}
               algorithmControls={algorithmControls}
               stepAmount={stepAmount}
-              normalizeToHundred={normalizeToHundred}
+              normalizationMode={normalizationMode}
               onChange={(position) => {
                 setCenterPosition(clampPosition(position, sourceEntries.length))
                 setCopied(false)
@@ -367,8 +392,8 @@ export function App() {
               onCenterWeightChange={handleCenterWeightChange}
               onMaxLevelChange={handleMaxLevelChange}
               onStepAmountChange={handleStepAmountChange}
-              onNormalizeToHundredChange={(enabled) => {
-                setNormalizeToHundred(enabled)
+              onNormalizationModeChange={(mode) => {
+                setNormalizationMode(mode)
                 setCopied(false)
               }}
               onAlgorithmChange={(nextValue) => {
@@ -456,4 +481,20 @@ function getUniqueProfileName(name: string, profiles: SavedProfile[]) {
   }
 
   return `${normalizedName} (${suffix})`
+}
+
+function resolveNormalizationMode(draft: SavedProfileDraft) {
+  if (draft.normalizationMode === "weight" || draft.normalizationMode === "chance") {
+    return draft.normalizationMode
+  }
+
+  if (draft.normalizeEffectiveToHundred) {
+    return "chance"
+  }
+
+  if (draft.normalizeToHundred) {
+    return "weight"
+  }
+
+  return "none"
 }
