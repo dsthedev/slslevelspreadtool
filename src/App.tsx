@@ -146,6 +146,11 @@ export function App() {
     const resolvedAlgorithm = isDistributionAlgorithm(draft.algorithm)
       ? draft.algorithm
       : "exponential"
+    const parsedDraftEntries = parseLevelSpread(draft.rawInput)
+    const nextSourceEntries =
+      resolvedAlgorithm === "manual" && parsedDraftEntries.length > 0
+        ? buildEntriesFromParsed(parsedDraftEntries, clampedMaxLevel)
+        : buildLevelEntries(clampedMaxLevel)
 
     setRawInput(draft.rawInput)
     setMaxLevel(clampedMaxLevel)
@@ -153,7 +158,7 @@ export function App() {
     setStepAmount(clampStepAmount(draft.stepAmount))
     setAlgorithm(resolvedAlgorithm)
     setNormalizationMode(resolveNormalizationMode(draft))
-    setSourceEntries(buildLevelEntries(clampedMaxLevel))
+    setSourceEntries(nextSourceEntries)
     setCenterPosition(clampPosition(draft.centerPosition, clampedMaxLevel))
     setCopied(false)
     setError(null)
