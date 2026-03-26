@@ -1,6 +1,8 @@
+import { useMemo } from "react"
 import { Copy } from "lucide-react"
 
 import type { LevelEntry } from "@/components/levelupchance/types"
+import { getEffectiveLevelChances } from "@/components/levelupchance/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -25,12 +27,14 @@ type OutputTableProps = {
 }
 
 export function OutputTable({ entries, onCopy, copied }: OutputTableProps) {
+  const effectiveEntries = useMemo(() => getEffectiveLevelChances(entries), [entries])
+
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>3. Copy New Spread</CardTitle>
         <CardDescription>
-          Use this list directly in your next paste destination.
+          Shows raw thresholds and the actual effective spawn chance per level.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-3">
@@ -40,14 +44,18 @@ export function OutputTable({ entries, onCopy, copied }: OutputTableProps) {
               <TableRow>
                 <TableHead className="py-2">Level</TableHead>
                 <TableHead className="py-2 text-right">Weight</TableHead>
+                <TableHead className="py-2 text-right">Effective %</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.map((entry) => (
+              {effectiveEntries.map((entry) => (
                 <TableRow key={entry.level}>
                   <TableCell className="py-2">L{entry.level}</TableCell>
                   <TableCell className="py-2 text-right font-mono text-lg leading-none font-semibold">
                     {entry.value.toFixed(4)}
+                  </TableCell>
+                  <TableCell className="py-2 text-right font-mono text-sm">
+                    {entry.effectiveChance.toFixed(4)}%
                   </TableCell>
                 </TableRow>
               ))}

@@ -15,6 +15,7 @@ import {
   distributionAlgorithms,
   getAlgorithmControls,
   isDistributionAlgorithm,
+  normalizeLevelWeights,
   type AlgorithmControl,
   type DistributionAlgorithm,
   formatLevelSpread,
@@ -41,6 +42,7 @@ export function App() {
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
     "exponential"
   )
+  const [normalizeToHundred, setNormalizeToHundred] = useState(false)
   const [centerPosition, setCenterPosition] = useState(1)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,14 +66,27 @@ export function App() {
       return []
     }
 
-    return applyCenteredWeights(
+    const generated = applyCenteredWeights(
       sourceEntries,
       safeCenterPosition - 1,
       algorithm,
       centerWeight,
       { stepAmount }
     )
-  }, [sourceEntries, safeCenterPosition, algorithm, centerWeight, stepAmount])
+
+    if (!normalizeToHundred) {
+      return generated
+    }
+
+    return normalizeLevelWeights(generated, 100)
+  }, [
+    sourceEntries,
+    safeCenterPosition,
+    algorithm,
+    centerWeight,
+    stepAmount,
+    normalizeToHundred,
+  ])
 
   const algorithmControls: AlgorithmControl[] = getAlgorithmControls(algorithm)
 
@@ -105,6 +120,7 @@ export function App() {
     setMaxLevel(DEFAULT_MAX_LEVEL)
     setCenterWeight(DEFAULT_CENTER_WEIGHT)
     setStepAmount(DEFAULT_STEP_AMOUNT)
+    setNormalizeToHundred(false)
     setSourceEntries(buildLevelEntries(DEFAULT_MAX_LEVEL))
     setCenterPosition(1)
     setCopied(false)
@@ -199,6 +215,7 @@ export function App() {
               }))}
               algorithmControls={algorithmControls}
               stepAmount={stepAmount}
+              normalizeToHundred={normalizeToHundred}
               onChange={(position) => {
                 setCenterPosition(clampPosition(position, sourceEntries.length))
                 setCopied(false)
@@ -206,6 +223,10 @@ export function App() {
               onCenterWeightChange={handleCenterWeightChange}
               onMaxLevelChange={handleMaxLevelChange}
               onStepAmountChange={handleStepAmountChange}
+              onNormalizeToHundredChange={(enabled) => {
+                setNormalizeToHundred(enabled)
+                setCopied(false)
+              }}
               onAlgorithmChange={(nextValue) => {
                 if (isDistributionAlgorithm(nextValue)) {
                   setAlgorithm(nextValue)

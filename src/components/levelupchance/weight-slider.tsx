@@ -27,10 +27,12 @@ type WeightSliderProps = {
   algorithmOptions: Array<{ value: DistributionAlgorithm; label: string }>
   algorithmControls: AlgorithmControl[]
   stepAmount: number
+  normalizeToHundred: boolean
   onChange: (position: number) => void
   onCenterWeightChange: (value: number) => void
   onMaxLevelChange: (value: number) => void
   onStepAmountChange: (value: number) => void
+  onNormalizeToHundredChange: (enabled: boolean) => void
   onAlgorithmChange: (value: DistributionAlgorithm) => void
 }
 
@@ -44,10 +46,12 @@ export function WeightSlider({
   algorithmOptions,
   algorithmControls,
   stepAmount,
+  normalizeToHundred,
   onChange,
   onCenterWeightChange,
   onMaxLevelChange,
   onStepAmountChange,
+  onNormalizeToHundredChange,
   onAlgorithmChange,
 }: WeightSliderProps) {
   const selectedAlgorithmDescription = algorithmDescriptions[algorithm]
@@ -69,6 +73,17 @@ export function WeightSlider({
           infoGameplay={selectedAlgorithmDescription.gameplay}
           onChange={(nextValue) => onAlgorithmChange(nextValue as DistributionAlgorithm)}
         />
+
+        <label className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-xs">
+          <input
+            type="checkbox"
+            checked={normalizeToHundred}
+            onChange={(event) => onNormalizeToHundredChange(event.target.checked)}
+            className="size-4 rounded border border-input"
+          />
+          Normalize total weight to 100
+        </label>
+
         {algorithmControls.includes("centerPosition") ? (
           <>
             <div className="flex items-center justify-between">

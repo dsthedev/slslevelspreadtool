@@ -51,6 +51,10 @@ export type AlgorithmTuningOptions = {
   stepAmount: number
 }
 
+export type LevelChanceEntry = LevelEntry & {
+  effectiveChance: number
+}
+
 export type AlgorithmDescription = {
   title: string
   summary: string
@@ -246,4 +250,58 @@ function sanitizeWeight(value: number) {
 
 export function formatLevelSpread(entries: LevelEntry[]): string {
   return entries.map((entry) => `${entry.level}: ${entry.value.toFixed(4)}`).join("\n")
+}
+
+export function normalizeLevelWeights(
+  entries: LevelEntry[],
+  targetTotal = 100
+): LevelEntry[] {
+  if (!Number.isFinite(targetTotal) || targetTotal <= 0 || entries.length === 0) {
+    return entries
+  }
+
+  const currentTotal = entries.reduce((sum, entry) => sum + sanitizeWeight(entry.value), 0)
+
+  if (!Number.isFinite(currentTotal) || currentTotal <= 0) {
+    return entries
+  }
+
+  const scale = targetTotal / currentTotal
+
+  return entries.map((entry) => ({
+    level: entry.level,
+    value: sanitizeWeight(entry.value) * scale,
+  }))
+}
+
+export function getEffectiveLevelChances(entries: LevelEntry[]): LevelChanceEntry[] {
+  let highestCoveredThreshold = 0
+
+  const chancesByLevel = new Map<number, LevelChanceEntry>()
+
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const entry = entries[index]
+    const threshold = clampToRollRange(entry.value)
+    const effectiveChance = Math.max(0, threshold - highestCoveredThreshold)
+
+    chancesByLevel.set(entry.level, {
+      level: entry.level,
+      value: entry.value,
+      effectiveChance,
+    })
+
+    highestCoveredThreshold = Math.max(highestCoveredThreshold, threshold)
+  }
+
+  return entries
+    .map((entry) => chancesByLevel.get(entry.level))
+    .filter((entry): entry is LevelChanceEntry => entry !== undefined)
+}
+
+function clampToRollRange(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  return Math.min(Math.max(value, 0), 100)
 }
