@@ -1,4 +1,5 @@
 import {
+  DEFAULT_GAUSSIAN_MID_BOOST,
   DECAY_FACTOR,
   DEFAULT_GAUSSIAN_SPREAD,
   DEFAULT_STEP_AMOUNT,
@@ -10,6 +11,7 @@ export type AlgorithmControl =
   | "centerWeight"
   | "stepAmount"
   | "gaussianSpread"
+  | "gaussianMidBoost"
 
 export const distributionAlgorithms = [
   {
@@ -25,7 +27,12 @@ export const distributionAlgorithms = [
   {
     value: "gaussian",
     label: "Gaussian",
-    controls: ["centerPosition", "centerWeight", "gaussianSpread"],
+    controls: [
+      "centerPosition",
+      "centerWeight",
+      "gaussianSpread",
+      "gaussianMidBoost",
+    ],
   },
   {
     value: "linear",
@@ -60,6 +67,7 @@ export type DistributionAlgorithm =
 export type AlgorithmTuningOptions = {
   stepAmount: number
   gaussianSpread: number
+  gaussianMidBoost: number
 }
 
 export type LevelChanceEntry = LevelEntry & {
@@ -91,7 +99,7 @@ export const algorithmDescriptions: Record<DistributionAlgorithm, AlgorithmDescr
     gaussian: {
       title: "Gaussian",
       summary:
-        "Forms a bell curve around the center with smooth falloff in both directions. Use spread to make the bell narrower or wider.",
+        "Forms a bell curve around the center with smooth falloff in both directions. Use spread to make the bell narrower or wider, then mid boost to lift shoulder levels around the center.",
       gameplay:
         "Best for a natural cluster around one level band. Extremes become uncommon, but not instantly impossible.",
     },
@@ -172,6 +180,7 @@ export function applyCenteredWeights(
   const resolvedTuning: AlgorithmTuningOptions = {
     stepAmount: sanitizeStepAmount(tuningOptions.stepAmount),
     gaussianSpread: sanitizeGaussianSpread(tuningOptions.gaussianSpread),
+    gaussianMidBoost: sanitizeGaussianMidBoost(tuningOptions.gaussianMidBoost),
   }
 
   return entries.map((entry, index) => {
@@ -204,7 +213,9 @@ function getWeightByAlgorithm(
   switch (algorithm) {
     case "gaussian": {
       const sigma = Math.max((totalEntries / 6) * tuningOptions.gaussianSpread, 1)
-      return centerWeight * Math.exp(-(distance ** 2) / (2 * sigma ** 2))
+      const baseCurve = Math.exp(-(distance ** 2) / (2 * sigma ** 2))
+      const boostedCurve = baseCurve ** (1 / tuningOptions.gaussianMidBoost)
+      return centerWeight * boostedCurve
     }
     case "linear": {
       const maxDistance = Math.max(totalEntries - 1, 1)
@@ -265,6 +276,14 @@ function sanitizeGaussianSpread(value: number | undefined) {
   }
 
   return Math.min(Math.max(value ?? DEFAULT_GAUSSIAN_SPREAD, 0.3), 3)
+}
+
+function sanitizeGaussianMidBoost(value: number | undefined) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_GAUSSIAN_MID_BOOST
+  }
+
+  return Math.min(Math.max(value ?? DEFAULT_GAUSSIAN_MID_BOOST, 0.5), 3)
 }
 
 function sanitizeWeight(value: number) {

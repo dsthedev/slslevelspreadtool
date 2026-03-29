@@ -24,6 +24,7 @@ type WeightSliderProps = {
   selectedLevelLabel: number
   centerWeight: number
   gaussianSpread: number
+  gaussianMidBoost: number
   maxLevel: number
   algorithm: DistributionAlgorithm
   algorithmOptions: Array<{ value: DistributionAlgorithm; label: string }>
@@ -33,6 +34,7 @@ type WeightSliderProps = {
   onChange: (position: number) => void
   onCenterWeightChange: (value: number) => void
   onGaussianSpreadChange: (value: number) => void
+  onGaussianMidBoostChange: (value: number) => void
   onMaxLevelChange: (value: number) => void
   onStepAmountChange: (value: number) => void
   onNormalizationModeChange: (mode: "none" | "weight" | "chance") => void
@@ -45,6 +47,7 @@ export function WeightSlider({
   selectedLevelLabel,
   centerWeight,
   gaussianSpread,
+  gaussianMidBoost,
   maxLevel,
   algorithm,
   algorithmOptions,
@@ -54,6 +57,7 @@ export function WeightSlider({
   onChange,
   onCenterWeightChange,
   onGaussianSpreadChange,
+  onGaussianMidBoostChange,
   onMaxLevelChange,
   onStepAmountChange,
   onNormalizationModeChange,
@@ -186,6 +190,37 @@ export function WeightSlider({
                 value={gaussianSpread}
                 onChange={(event) =>
                   onGaussianSpreadChange(Number.parseFloat(event.target.value))
+                }
+                className="w-20"
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {algorithmControls.includes("gaussianMidBoost") ? (
+          <div className="space-y-2">
+            <Label htmlFor="gaussian-mid-boost">Gaussian mid boost (0.5-3.0)</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="gaussian-mid-boost"
+                type="range"
+                min={0.5}
+                max={3}
+                step={0.1}
+                value={gaussianMidBoost}
+                onChange={(event) =>
+                  onGaussianMidBoostChange(Number.parseFloat(event.target.value))
+                }
+                className="h-3 cursor-pointer appearance-none rounded-full border-0 bg-transparent px-0 py-0 [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-0.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-background"
+              />
+              <Input
+                type="number"
+                min={0.5}
+                max={3}
+                step={0.1}
+                value={gaussianMidBoost}
+                onChange={(event) =>
+                  onGaussianMidBoostChange(Number.parseFloat(event.target.value))
                 }
                 className="w-20"
               />

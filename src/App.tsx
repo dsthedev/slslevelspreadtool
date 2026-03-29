@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 
 import {
   DEFAULT_CENTER_WEIGHT,
+  DEFAULT_GAUSSIAN_MID_BOOST,
   DEFAULT_GAUSSIAN_SPREAD,
   DEFAULT_LEVEL_SPREAD,
   DEFAULT_MAX_LEVEL,
@@ -50,6 +51,9 @@ export function App() {
   const [centerWeight, setCenterWeight] = useState(DEFAULT_CENTER_WEIGHT)
   const [stepAmount, setStepAmount] = useState(DEFAULT_STEP_AMOUNT)
   const [gaussianSpread, setGaussianSpread] = useState(DEFAULT_GAUSSIAN_SPREAD)
+  const [gaussianMidBoost, setGaussianMidBoost] = useState(
+    DEFAULT_GAUSSIAN_MID_BOOST
+  )
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
     "exponential"
   )
@@ -114,7 +118,7 @@ export function App() {
       safeCenterPosition - 1,
       algorithm,
       centerWeight,
-      { stepAmount, gaussianSpread }
+      { stepAmount, gaussianSpread, gaussianMidBoost }
     )
 
     if (normalizationMode === "weight") {
@@ -133,6 +137,7 @@ export function App() {
     centerWeight,
     stepAmount,
     gaussianSpread,
+    gaussianMidBoost,
     normalizationMode,
   ])
 
@@ -160,6 +165,7 @@ export function App() {
     setCenterWeight(clampCenterWeight(draft.centerWeight))
     setStepAmount(clampStepAmount(draft.stepAmount))
     setGaussianSpread(clampGaussianSpread(draft.gaussianSpread))
+    setGaussianMidBoost(clampGaussianMidBoost(draft.gaussianMidBoost))
     setAlgorithm(resolvedAlgorithm)
     setNormalizationMode(resolveNormalizationMode(draft))
     setSourceEntries(nextSourceEntries)
@@ -174,6 +180,7 @@ export function App() {
     centerWeight,
     stepAmount,
     gaussianSpread,
+    gaussianMidBoost,
     algorithm,
     centerPosition: safeCenterPosition,
     normalizeToHundred: normalizationMode === "weight",
@@ -227,6 +234,7 @@ export function App() {
     setCenterWeight(DEFAULT_CENTER_WEIGHT)
     setStepAmount(DEFAULT_STEP_AMOUNT)
     setGaussianSpread(DEFAULT_GAUSSIAN_SPREAD)
+    setGaussianMidBoost(DEFAULT_GAUSSIAN_MID_BOOST)
     setNormalizationMode("none")
     setSourceEntries(buildLevelEntries(DEFAULT_MAX_LEVEL))
     setCenterPosition(1)
@@ -257,6 +265,12 @@ export function App() {
   const handleGaussianSpreadChange = (nextValue: number) => {
     const clamped = clampGaussianSpread(nextValue)
     setGaussianSpread(clamped)
+    setCopied(false)
+  }
+
+  const handleGaussianMidBoostChange = (nextValue: number) => {
+    const clamped = clampGaussianMidBoost(nextValue)
+    setGaussianMidBoost(clamped)
     setCopied(false)
   }
 
@@ -434,6 +448,7 @@ export function App() {
               selectedLevelLabel={selectedLevel ?? 1}
               centerWeight={centerWeight}
               gaussianSpread={gaussianSpread}
+              gaussianMidBoost={gaussianMidBoost}
               maxLevel={maxLevel}
               algorithm={algorithm}
               algorithmOptions={distributionAlgorithms.map((item) => ({
@@ -449,6 +464,7 @@ export function App() {
               }}
               onCenterWeightChange={handleCenterWeightChange}
               onGaussianSpreadChange={handleGaussianSpreadChange}
+              onGaussianMidBoostChange={handleGaussianMidBoostChange}
               onMaxLevelChange={handleMaxLevelChange}
               onStepAmountChange={handleStepAmountChange}
               onNormalizationModeChange={(mode) => {
@@ -558,6 +574,15 @@ function clampGaussianSpread(value: number | undefined) {
 
   const numericValue = value ?? DEFAULT_GAUSSIAN_SPREAD
   return Math.min(Math.max(Math.round(numericValue * 10) / 10, 0.3), 3)
+}
+
+function clampGaussianMidBoost(value: number | undefined) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_GAUSSIAN_MID_BOOST
+  }
+
+  const numericValue = value ?? DEFAULT_GAUSSIAN_MID_BOOST
+  return Math.min(Math.max(Math.round(numericValue * 10) / 10, 0.5), 3)
 }
 
 export default App

@@ -29,3 +29,4 @@ export const DEFAULT_CENTER_WEIGHT = 20
 export const DEFAULT_MAX_LEVEL = 25
 export const DEFAULT_STEP_AMOUNT = 1
 export const DEFAULT_GAUSSIAN_SPREAD = 1
+export const DEFAULT_GAUSSIAN_MID_BOOST = 1

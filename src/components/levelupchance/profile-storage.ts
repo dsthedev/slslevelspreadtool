@@ -9,6 +9,7 @@ export type SavedProfileDraft = {
   centerWeight: number
   stepAmount: number
   gaussianSpread?: number
+  gaussianMidBoost?: number
   algorithm: DistributionAlgorithm
   centerPosition: number
   normalizeToHundred: boolean
@@ -128,6 +129,8 @@ function isSavedProfileDraft(value: unknown): value is SavedProfileDraft {
     typeof candidate.stepAmount === "number" &&
     (candidate.gaussianSpread === undefined ||
       typeof candidate.gaussianSpread === "number") &&
+    (candidate.gaussianMidBoost === undefined ||
+      typeof candidate.gaussianMidBoost === "number") &&
     typeof candidate.algorithm === "string" &&
     typeof candidate.centerPosition === "number" &&
     typeof candidate.normalizeToHundred === "boolean" &&
