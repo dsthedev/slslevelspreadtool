@@ -42,6 +42,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Heart, Plus, TerminalIcon } from "lucide-react"
 
 export function App() {
   const [rawInput, setRawInput] = useState(DEFAULT_LEVEL_SPREAD)
@@ -541,6 +542,19 @@ export function App() {
             expectedEntries={weightedEntries}
           />
         </div>
+      </div>
+      <div className="flex items-center justify-center gap-2 pt-6 text-center text-xs text-muted-foreground">
+        <Heart size={20} strokeWidth={1.625} className="text-red-500" />
+        <Plus size={16} strokeWidth={1.625} />
+        <a
+          href="https://github.com/dsthedev/slslevelspreadtool"
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-4"
+        >
+          <TerminalIcon size={24} strokeWidth={1.625} className="text-slate-500" />
+          <span className="sr-only">made by d11z</span>
+        </a>
       </div>
     </main>
   )
