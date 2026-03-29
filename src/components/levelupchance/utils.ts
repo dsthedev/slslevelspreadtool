@@ -1,10 +1,15 @@
-import { DECAY_FACTOR, DEFAULT_STEP_AMOUNT } from "@/components/levelupchance/constants"
+import {
+  DECAY_FACTOR,
+  DEFAULT_GAUSSIAN_SPREAD,
+  DEFAULT_STEP_AMOUNT,
+} from "@/components/levelupchance/constants"
 import type { LevelEntry } from "@/components/levelupchance/types"
 
 export type AlgorithmControl =
   | "centerPosition"
   | "centerWeight"
   | "stepAmount"
+  | "gaussianSpread"
 
 export const distributionAlgorithms = [
   {
@@ -20,7 +25,7 @@ export const distributionAlgorithms = [
   {
     value: "gaussian",
     label: "Gaussian",
-    controls: ["centerPosition", "centerWeight"],
+    controls: ["centerPosition", "centerWeight", "gaussianSpread"],
   },
   {
     value: "linear",
@@ -54,6 +59,7 @@ export type DistributionAlgorithm =
 
 export type AlgorithmTuningOptions = {
   stepAmount: number
+  gaussianSpread: number
 }
 
 export type LevelChanceEntry = LevelEntry & {
@@ -85,7 +91,7 @@ export const algorithmDescriptions: Record<DistributionAlgorithm, AlgorithmDescr
     gaussian: {
       title: "Gaussian",
       summary:
-        "Forms a bell curve around the center with smooth falloff in both directions.",
+        "Forms a bell curve around the center with smooth falloff in both directions. Use spread to make the bell narrower or wider.",
       gameplay:
         "Best for a natural cluster around one level band. Extremes become uncommon, but not instantly impossible.",
     },
@@ -165,6 +171,7 @@ export function applyCenteredWeights(
   const safeCenter = Math.min(Math.max(centerIndex, 0), Math.max(entries.length - 1, 0))
   const resolvedTuning: AlgorithmTuningOptions = {
     stepAmount: sanitizeStepAmount(tuningOptions.stepAmount),
+    gaussianSpread: sanitizeGaussianSpread(tuningOptions.gaussianSpread),
   }
 
   return entries.map((entry, index) => {
@@ -196,7 +203,7 @@ function getWeightByAlgorithm(
 ) {
   switch (algorithm) {
     case "gaussian": {
-      const sigma = Math.max(totalEntries / 6, 1)
+      const sigma = Math.max((totalEntries / 6) * tuningOptions.gaussianSpread, 1)
       return centerWeight * Math.exp(-(distance ** 2) / (2 * sigma ** 2))
     }
     case "linear": {
@@ -250,6 +257,14 @@ function sanitizeStepAmount(value: number | undefined) {
   }
 
   return Math.max(0.1, value ?? DEFAULT_STEP_AMOUNT)
+}
+
+function sanitizeGaussianSpread(value: number | undefined) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_GAUSSIAN_SPREAD
+  }
+
+  return Math.min(Math.max(value ?? DEFAULT_GAUSSIAN_SPREAD, 0.3), 3)
 }
 
 function sanitizeWeight(value: number) {

@@ -23,6 +23,7 @@ type WeightSliderProps = {
   maxPosition: number
   selectedLevelLabel: number
   centerWeight: number
+  gaussianSpread: number
   maxLevel: number
   algorithm: DistributionAlgorithm
   algorithmOptions: Array<{ value: DistributionAlgorithm; label: string }>
@@ -31,6 +32,7 @@ type WeightSliderProps = {
   normalizationMode: "none" | "weight" | "chance"
   onChange: (position: number) => void
   onCenterWeightChange: (value: number) => void
+  onGaussianSpreadChange: (value: number) => void
   onMaxLevelChange: (value: number) => void
   onStepAmountChange: (value: number) => void
   onNormalizationModeChange: (mode: "none" | "weight" | "chance") => void
@@ -42,6 +44,7 @@ export function WeightSlider({
   maxPosition,
   selectedLevelLabel,
   centerWeight,
+  gaussianSpread,
   maxLevel,
   algorithm,
   algorithmOptions,
@@ -50,6 +53,7 @@ export function WeightSlider({
   normalizationMode,
   onChange,
   onCenterWeightChange,
+  onGaussianSpreadChange,
   onMaxLevelChange,
   onStepAmountChange,
   onNormalizationModeChange,
@@ -151,6 +155,37 @@ export function WeightSlider({
                 value={centerWeight}
                 onChange={(event) =>
                   onCenterWeightChange(Number.parseInt(event.target.value, 10))
+                }
+                className="w-20"
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {algorithmControls.includes("gaussianSpread") ? (
+          <div className="space-y-2">
+            <Label htmlFor="gaussian-spread">Gaussian spread (0.3-3.0)</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="gaussian-spread"
+                type="range"
+                min={0.3}
+                max={3}
+                step={0.1}
+                value={gaussianSpread}
+                onChange={(event) =>
+                  onGaussianSpreadChange(Number.parseFloat(event.target.value))
+                }
+                className="h-3 cursor-pointer appearance-none rounded-full border-0 bg-transparent px-0 py-0 [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-0.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-background"
+              />
+              <Input
+                type="number"
+                min={0.3}
+                max={3}
+                step={0.1}
+                value={gaussianSpread}
+                onChange={(event) =>
+                  onGaussianSpreadChange(Number.parseFloat(event.target.value))
                 }
                 className="w-20"
               />

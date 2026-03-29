@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 
 import {
   DEFAULT_CENTER_WEIGHT,
+  DEFAULT_GAUSSIAN_SPREAD,
   DEFAULT_LEVEL_SPREAD,
   DEFAULT_MAX_LEVEL,
   DEFAULT_STEP_AMOUNT,
@@ -48,6 +49,7 @@ export function App() {
   const [maxLevel, setMaxLevel] = useState(DEFAULT_MAX_LEVEL)
   const [centerWeight, setCenterWeight] = useState(DEFAULT_CENTER_WEIGHT)
   const [stepAmount, setStepAmount] = useState(DEFAULT_STEP_AMOUNT)
+  const [gaussianSpread, setGaussianSpread] = useState(DEFAULT_GAUSSIAN_SPREAD)
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
     "exponential"
   )
@@ -112,7 +114,7 @@ export function App() {
       safeCenterPosition - 1,
       algorithm,
       centerWeight,
-      { stepAmount }
+      { stepAmount, gaussianSpread }
     )
 
     if (normalizationMode === "weight") {
@@ -130,6 +132,7 @@ export function App() {
     algorithm,
     centerWeight,
     stepAmount,
+    gaussianSpread,
     normalizationMode,
   ])
 
@@ -156,6 +159,7 @@ export function App() {
     setMaxLevel(clampedMaxLevel)
     setCenterWeight(clampCenterWeight(draft.centerWeight))
     setStepAmount(clampStepAmount(draft.stepAmount))
+    setGaussianSpread(clampGaussianSpread(draft.gaussianSpread))
     setAlgorithm(resolvedAlgorithm)
     setNormalizationMode(resolveNormalizationMode(draft))
     setSourceEntries(nextSourceEntries)
@@ -169,6 +173,7 @@ export function App() {
     maxLevel,
     centerWeight,
     stepAmount,
+    gaussianSpread,
     algorithm,
     centerPosition: safeCenterPosition,
     normalizeToHundred: normalizationMode === "weight",
@@ -221,6 +226,7 @@ export function App() {
     setMaxLevel(DEFAULT_MAX_LEVEL)
     setCenterWeight(DEFAULT_CENTER_WEIGHT)
     setStepAmount(DEFAULT_STEP_AMOUNT)
+    setGaussianSpread(DEFAULT_GAUSSIAN_SPREAD)
     setNormalizationMode("none")
     setSourceEntries(buildLevelEntries(DEFAULT_MAX_LEVEL))
     setCenterPosition(1)
@@ -245,6 +251,12 @@ export function App() {
   const handleStepAmountChange = (nextValue: number) => {
     const clamped = clampStepAmount(nextValue)
     setStepAmount(clamped)
+    setCopied(false)
+  }
+
+  const handleGaussianSpreadChange = (nextValue: number) => {
+    const clamped = clampGaussianSpread(nextValue)
+    setGaussianSpread(clamped)
     setCopied(false)
   }
 
@@ -421,6 +433,7 @@ export function App() {
               maxPosition={Math.max(1, sourceEntries.length)}
               selectedLevelLabel={selectedLevel ?? 1}
               centerWeight={centerWeight}
+              gaussianSpread={gaussianSpread}
               maxLevel={maxLevel}
               algorithm={algorithm}
               algorithmOptions={distributionAlgorithms.map((item) => ({
@@ -435,6 +448,7 @@ export function App() {
                 setCopied(false)
               }}
               onCenterWeightChange={handleCenterWeightChange}
+              onGaussianSpreadChange={handleGaussianSpreadChange}
               onMaxLevelChange={handleMaxLevelChange}
               onStepAmountChange={handleStepAmountChange}
               onNormalizationModeChange={(mode) => {
@@ -535,6 +549,15 @@ function clampStepAmount(value: number) {
   }
 
   return Math.min(Math.max(Math.round(value * 10) / 10, 0.1), 10)
+}
+
+function clampGaussianSpread(value: number | undefined) {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_GAUSSIAN_SPREAD
+  }
+
+  const numericValue = value ?? DEFAULT_GAUSSIAN_SPREAD
+  return Math.min(Math.max(Math.round(numericValue * 10) / 10, 0.3), 3)
 }
 
 export default App
