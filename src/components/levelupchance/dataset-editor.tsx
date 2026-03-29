@@ -15,7 +15,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
@@ -82,7 +81,7 @@ export function ProfileManagerCard({
           <Label htmlFor="saved-profile-select">Saved profiles</Label>
           <Select value={selectedProfileId ?? ""} onValueChange={(newValue) => onSelectProfile(newValue ?? "")}>
             <SelectTrigger id="saved-profile-select" className="w-full">
-              <SelectValue placeholder={selectedProfileName} />
+              {selectedProfileName}
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Current unsaved state</SelectItem>
