@@ -25,7 +25,7 @@ export const DEFAULT_LEVEL_SPREAD = `1: 20
 25: 0.0001`
 
 export const DECAY_FACTOR = 0.5
-export const DEFAULT_CENTER_WEIGHT = 20
+export const DEFAULT_CENTER_WEIGHT = 100
 export const DEFAULT_MAX_LEVEL = 25
 export const DEFAULT_STEP_AMOUNT = 1
 export const DEFAULT_GAUSSIAN_SPREAD = 1

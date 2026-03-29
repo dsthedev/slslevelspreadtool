@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 type DatasetEditorProps = {
   value: string
@@ -34,12 +35,16 @@ type ProfileManagerCardProps = Pick<
   | "onOverwriteProfile"
   | "onDeleteProfile"
   | "onDeleteAllProfiles"
->
+> & {
+  className?: string
+}
 
 type ManualInputCardProps = Pick<
   DatasetEditorProps,
   "value" | "onChange" | "onLoad" | "onResetDefault"
->
+> & {
+  className?: string
+}
 
 export function ProfileManagerCard({
   savedProfiles,
@@ -49,11 +54,12 @@ export function ProfileManagerCard({
   onOverwriteProfile,
   onDeleteProfile,
   onDeleteAllProfiles,
+  className,
 }: ProfileManagerCardProps) {
   const hasSelectedProfile = selectedProfileId !== null
 
   return (
-    <Card className="h-full">
+    <Card className={cn("h-full", className)}>
       <CardHeader>
         <CardTitle>1. Profile Manager</CardTitle>
         <CardDescription>
@@ -116,9 +122,10 @@ export function ManualInputCard({
   onChange,
   onLoad,
   onResetDefault,
+  className,
 }: ManualInputCardProps) {
   return (
-    <Card className="h-full">
+    <Card className={cn("h-full", className)}>
       <CardHeader>
         <CardTitle>4. Manual Input</CardTitle>
         <CardDescription>

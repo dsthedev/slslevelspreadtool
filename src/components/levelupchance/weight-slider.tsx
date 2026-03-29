@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 type WeightSliderProps = {
   centerPosition: number
@@ -31,6 +32,7 @@ type WeightSliderProps = {
   algorithmControls: AlgorithmControl[]
   stepAmount: number
   normalizationMode: "none" | "weight" | "chance"
+  className?: string
   onChange: (position: number) => void
   onCenterWeightChange: (value: number) => void
   onGaussianSpreadChange: (value: number) => void
@@ -54,6 +56,7 @@ export function WeightSlider({
   algorithmControls,
   stepAmount,
   normalizationMode,
+  className,
   onChange,
   onCenterWeightChange,
   onGaussianSpreadChange,
@@ -66,7 +69,7 @@ export function WeightSlider({
   const selectedAlgorithmDescription = algorithmDescriptions[algorithm]
 
   return (
-    <Card className="h-full">
+    <Card className={cn("h-full", className)}>
       <CardHeader>
         <CardTitle>2. Adjustify</CardTitle>
         <CardDescription>

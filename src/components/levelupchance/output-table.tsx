@@ -19,18 +19,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 type OutputTableProps = {
   entries: LevelEntry[]
   onCopy: () => void
   copied: boolean
+  className?: string
 }
 
-export function OutputTable({ entries, onCopy, copied }: OutputTableProps) {
+export function OutputTable({ entries, onCopy, copied, className }: OutputTableProps) {
   const effectiveEntries = useMemo(() => getEffectiveLevelChances(entries), [entries])
 
   return (
-    <Card className="flex h-full flex-col">
+    <Card className={cn("flex h-full flex-col", className)}>
       <CardHeader>
         <CardTitle>5. Copy Spread</CardTitle>
         <CardDescription>

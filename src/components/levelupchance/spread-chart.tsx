@@ -26,6 +26,7 @@ type SpreadChartProps = {
   selectedLevel: number | null
   peakValue: number
   error: string | null
+  className?: string
 }
 
 function getBandColorClass(
@@ -68,6 +69,7 @@ export function SpreadChart({
   selectedLevel,
   peakValue,
   error,
+  className,
 }: SpreadChartProps) {
   const maxScaleValue = 100
   const centerIndex = Math.max(centerPosition - 1, 0)
@@ -85,7 +87,7 @@ export function SpreadChart({
   const hasUnreachableEntries = unreachableEntries.length > 0
 
   return (
-    <Card className="flex h-full flex-col">
+    <Card className={cn("flex h-full flex-col", className)}>
       <CardHeader>
         <CardTitle>3. Dist Preview</CardTitle>
         <CardDescription>Bars use a fixed vertical scale from 0 to 100.</CardDescription>

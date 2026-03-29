@@ -55,7 +55,7 @@ export function App() {
     DEFAULT_GAUSSIAN_MID_BOOST
   )
   const [algorithm, setAlgorithm] = useState<DistributionAlgorithm>(
-    "exponential"
+    "gaussian"
   )
   const [normalizationMode, setNormalizationMode] = useState<
     "none" | "weight" | "chance"
@@ -153,7 +153,7 @@ export function App() {
     const clampedMaxLevel = clampMaxLevel(draft.maxLevel)
     const resolvedAlgorithm = isDistributionAlgorithm(draft.algorithm)
       ? draft.algorithm
-      : "exponential"
+      : "gaussian"
     const parsedDraftEntries = parseLevelSpread(draft.rawInput)
     const nextSourceEntries =
       resolvedAlgorithm === "manual" && parsedDraftEntries.length > 0
@@ -400,7 +400,10 @@ export function App() {
   return (
     <main className="min-h-svh bg-[radial-gradient(circle_at_20%_10%,rgba(59,130,246,0.25),transparent_40%),radial-gradient(circle_at_85%_90%,rgba(16,185,129,0.2),transparent_35%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <Card className="border border-border/80 bg-card/85 backdrop-blur-sm">
+        <Card
+          id="hero-section"
+          className="border-2 border-red-900 backdrop-blur-sm"
+        >
           <CardHeader>
             <CardTitle className="text-2xl">SLS Level Spread Tool</CardTitle>
             <CardDescription>
@@ -426,8 +429,12 @@ export function App() {
         </Card>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <div className="xl:col-span-2">
+          <div
+            id="profile-manager-section"
+            className="rounded-xl border-2 border-orange-900 p-0"
+          >
             <ProfileManagerCard
+              className="h-full rounded-xl border-0"
               savedProfiles={savedProfiles.map((profile) => ({
                 id: profile.id,
                 name: profile.name,
@@ -441,8 +448,12 @@ export function App() {
             />
           </div>
 
-          <div className="h-full">
+          <div
+            id="adjustify-section"
+            className="h-full rounded-xl border-2 border-yellow-900 p-0"
+          >
             <WeightSlider
+              className="h-full rounded-xl border-0"
               centerPosition={safeCenterPosition}
               maxPosition={Math.max(1, sourceEntries.length)}
               selectedLevelLabel={selectedLevel ?? 1}
@@ -480,8 +491,12 @@ export function App() {
             />
           </div>
 
-          <div className="h-full">
+          <div
+            id="distribution-preview-section"
+            className="h-full rounded-xl border-2 border-green-900 p-0"
+          >
             <SpreadChart
+              className="h-full rounded-xl border-0"
               entries={weightedEntries}
               centerPosition={safeCenterPosition}
               algorithm={algorithm}
@@ -492,8 +507,12 @@ export function App() {
             />
           </div>
 
-          <div className="h-full">
+          <div
+            id="input-section"
+            className="h-full rounded-xl border-2 border-blue-900 p-0"
+          >
             <ManualInputCard
+              className="h-full rounded-xl border-0"
               value={rawInput}
               onChange={handleRawInputChange}
               onLoad={handleLoad}
@@ -501,8 +520,16 @@ export function App() {
             />
           </div>
 
-          <div className="h-full">
-            <OutputTable entries={weightedEntries} onCopy={handleCopy} copied={copied} />
+          <div
+            id="copy-section"
+            className="h-full rounded-xl border-2 border-purple-900 p-0"
+          >
+            <OutputTable
+              className="h-full rounded-xl border-0"
+              entries={weightedEntries}
+              onCopy={handleCopy}
+              copied={copied}
+            />
           </div>
         </div>
       </div>
