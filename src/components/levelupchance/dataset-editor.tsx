@@ -80,7 +80,7 @@ export function ProfileManagerCard({
       <CardContent className="flex h-full flex-col gap-4">
         <div className="space-y-2 rounded-xl border border-border/70 bg-muted/15 p-3">
           <Label htmlFor="saved-profile-select">Saved profiles</Label>
-          <Select value={selectedProfileId ?? ""} onValueChange={onSelectProfile}>
+          <Select value={selectedProfileId ?? ""} onValueChange={(newValue) => onSelectProfile(newValue ?? "")}>
             <SelectTrigger id="saved-profile-select" className="w-full">
               <SelectValue placeholder={selectedProfileName} />
             </SelectTrigger>

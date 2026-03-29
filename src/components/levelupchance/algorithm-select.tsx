@@ -73,7 +73,7 @@ export function AlgorithmSelect({
           </Popover.Portal>
         </Popover.Root>
       </div>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={(newValue) => onChange(newValue ?? value)}>
         <SelectTrigger id="algorithm-select" className='w-full'>
           <SelectValue />
         </SelectTrigger>
