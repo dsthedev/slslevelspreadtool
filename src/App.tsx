@@ -399,138 +399,136 @@ export function App() {
 
   return (
     <main className="min-h-svh bg-[radial-gradient(circle_at_20%_10%,rgba(59,130,246,0.25),transparent_40%),radial-gradient(circle_at_85%_90%,rgba(16,185,129,0.2),transparent_35%)] px-4 py-8 sm:px-6 lg:px-10">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <Card
-          id="hero-section"
-          className="border-2 border-red-900 backdrop-blur-sm"
+      <div className="flex mx-auto flex-row my-6 justify-center"><h1 className="text-3xl">SLS Level Spread Tool</h1></div>
+      <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-2">
+        <div id="hero-section" className="h-full rounded-xl border-2 border-red-900 p-0">
+          <Card className="h-full rounded-xl border-0 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-2xl"></CardTitle>
+              <CardDescription>
+                Upload a level spread dataset, adjust the distribution settings, and copy the modified spread for use in your SLS configuration.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Controls the{" "}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                  defaultCreatureLevelUpChance
+                </code>{" "}
+                table in{" "}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                  BepInEx/StarLevelSystem/LevelSettings.yaml
+                </code>
+                . When a creature spawns, the mod makes a <strong>single 0-100 roll</strong> and selects the highest level whose chance value the roll falls within - checking from the highest level down.
+                For example, with{" "}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">1: 20, 2: 10, 3: 5</code>
+                {" "}a roll of 8 lands within level 2 (&le; 10) but not level 3 (&le; 5), so the creature is 2-star. A roll of 50 exceeds all thresholds - the creature spawns at base level (no stars). Level 1 is not required to be 100; its value controls how often any leveled creature appears at all.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div
+          id="profile-manager-section"
+          className="h-full rounded-xl border-2 border-orange-900 p-0"
         >
-          <CardHeader>
-            <CardTitle className="text-2xl">SLS Level Spread Tool</CardTitle>
-            <CardDescription>
-              Upload a level spread dataset, adjust the distribution settings, and copy the modified spread for use in your SLS configuration.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Controls the{" "}
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
-                defaultCreatureLevelUpChance
-              </code>{" "}
-              table in{" "}
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
-                BepInEx/StarLevelSystem/LevelSettings.yaml
-              </code>
-              . When a creature spawns, the mod makes a <strong>single 0-100 roll</strong> and selects the highest level whose chance value the roll falls within - checking from the highest level down.
-              For example, with{" "}
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">1: 20, 2: 10, 3: 5</code>
-              {" "}a roll of 8 lands within level 2 (&le; 10) but not level 3 (&le; 5), so the creature is 2-star. A roll of 50 exceeds all thresholds - the creature spawns at base level (no stars). Level 1 is not required to be 100; its value controls how often any leveled creature appears at all.
-            </p>
-          </CardContent>
-        </Card>
+          <ProfileManagerCard
+            className="h-full rounded-xl border-0"
+            savedProfiles={savedProfiles.map((profile) => ({
+              id: profile.id,
+              name: profile.name,
+            }))}
+            selectedProfileId={selectedProfileId}
+            onSelectProfile={handleSelectProfile}
+            onSaveNewProfile={handleSaveNewProfile}
+            onOverwriteProfile={handleOverwriteProfile}
+            onDeleteProfile={handleDeleteProfile}
+            onDeleteAllProfiles={handleDeleteAllProfiles}
+          />
+        </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
-          <div
-            id="profile-manager-section"
-            className="rounded-xl border-2 border-orange-900 p-0"
-          >
-            <ProfileManagerCard
-              className="h-full rounded-xl border-0"
-              savedProfiles={savedProfiles.map((profile) => ({
-                id: profile.id,
-                name: profile.name,
-              }))}
-              selectedProfileId={selectedProfileId}
-              onSelectProfile={handleSelectProfile}
-              onSaveNewProfile={handleSaveNewProfile}
-              onOverwriteProfile={handleOverwriteProfile}
-              onDeleteProfile={handleDeleteProfile}
-              onDeleteAllProfiles={handleDeleteAllProfiles}
-            />
-          </div>
-
-          <div
-            id="adjustify-section"
-            className="h-full rounded-xl border-2 border-yellow-900 p-0"
-          >
-            <WeightSlider
-              className="h-full rounded-xl border-0"
-              centerPosition={safeCenterPosition}
-              maxPosition={Math.max(1, sourceEntries.length)}
-              selectedLevelLabel={selectedLevel ?? 1}
-              centerWeight={centerWeight}
-              gaussianSpread={gaussianSpread}
-              gaussianMidBoost={gaussianMidBoost}
-              maxLevel={maxLevel}
-              algorithm={algorithm}
-              algorithmOptions={distributionAlgorithms.map((item) => ({
-                value: item.value,
-                label: item.label,
-              }))}
-              algorithmControls={algorithmControls}
-              stepAmount={stepAmount}
-              normalizationMode={normalizationMode}
-              onChange={(position) => {
-                setCenterPosition(clampPosition(position, sourceEntries.length))
+        <div
+          id="adjustify-section"
+          className="h-full rounded-xl border-2 border-yellow-900 p-0"
+        >
+          <WeightSlider
+            className="h-full rounded-xl border-0"
+            centerPosition={safeCenterPosition}
+            maxPosition={Math.max(1, sourceEntries.length)}
+            selectedLevelLabel={selectedLevel ?? 1}
+            centerWeight={centerWeight}
+            gaussianSpread={gaussianSpread}
+            gaussianMidBoost={gaussianMidBoost}
+            maxLevel={maxLevel}
+            algorithm={algorithm}
+            algorithmOptions={distributionAlgorithms.map((item) => ({
+              value: item.value,
+              label: item.label,
+            }))}
+            algorithmControls={algorithmControls}
+            stepAmount={stepAmount}
+            normalizationMode={normalizationMode}
+            onChange={(position) => {
+              setCenterPosition(clampPosition(position, sourceEntries.length))
+              setCopied(false)
+            }}
+            onCenterWeightChange={handleCenterWeightChange}
+            onGaussianSpreadChange={handleGaussianSpreadChange}
+            onGaussianMidBoostChange={handleGaussianMidBoostChange}
+            onMaxLevelChange={handleMaxLevelChange}
+            onStepAmountChange={handleStepAmountChange}
+            onNormalizationModeChange={(mode) => {
+              setNormalizationMode(mode)
+              setCopied(false)
+            }}
+            onAlgorithmChange={(nextValue) => {
+              if (isDistributionAlgorithm(nextValue)) {
+                setAlgorithm(nextValue)
                 setCopied(false)
-              }}
-              onCenterWeightChange={handleCenterWeightChange}
-              onGaussianSpreadChange={handleGaussianSpreadChange}
-              onGaussianMidBoostChange={handleGaussianMidBoostChange}
-              onMaxLevelChange={handleMaxLevelChange}
-              onStepAmountChange={handleStepAmountChange}
-              onNormalizationModeChange={(mode) => {
-                setNormalizationMode(mode)
-                setCopied(false)
-              }}
-              onAlgorithmChange={(nextValue) => {
-                if (isDistributionAlgorithm(nextValue)) {
-                  setAlgorithm(nextValue)
-                  setCopied(false)
-                }
-              }}
-            />
-          </div>
+              }
+            }}
+          />
+        </div>
 
-          <div
-            id="distribution-preview-section"
-            className="h-full rounded-xl border-2 border-green-900 p-0"
-          >
-            <SpreadChart
-              className="h-full rounded-xl border-0"
-              entries={weightedEntries}
-              centerPosition={safeCenterPosition}
-              algorithm={algorithm}
-              levelsCount={sourceEntries.length}
-              selectedLevel={selectedLevel ?? null}
-              peakValue={peakValue}
-              error={error}
-            />
-          </div>
+        <div
+          id="distribution-preview-section"
+          className="h-full rounded-xl border-2 border-green-900 p-0"
+        >
+          <SpreadChart
+            className="h-full rounded-xl border-0"
+            entries={weightedEntries}
+            centerPosition={safeCenterPosition}
+            algorithm={algorithm}
+            levelsCount={sourceEntries.length}
+            selectedLevel={selectedLevel ?? null}
+            peakValue={peakValue}
+            error={error}
+          />
+        </div>
 
-          <div
-            id="input-section"
-            className="h-full rounded-xl border-2 border-blue-900 p-0"
-          >
-            <ManualInputCard
-              className="h-full rounded-xl border-0"
-              value={rawInput}
-              onChange={handleRawInputChange}
-              onLoad={handleLoad}
-              onResetDefault={handleResetDefault}
-            />
-          </div>
+        <div
+          id="input-section"
+          className="h-full rounded-xl border-2 border-blue-900 p-0"
+        >
+          <ManualInputCard
+            className="h-full rounded-xl border-0"
+            value={rawInput}
+            onChange={handleRawInputChange}
+            onLoad={handleLoad}
+            onResetDefault={handleResetDefault}
+          />
+        </div>
 
-          <div
-            id="copy-section"
-            className="h-full rounded-xl border-2 border-purple-900 p-0"
-          >
-            <OutputTable
-              className="h-full rounded-xl border-0"
-              entries={weightedEntries}
-              onCopy={handleCopy}
-              copied={copied}
-            />
-          </div>
+        <div
+          id="copy-section"
+          className="h-full rounded-xl border-2 border-purple-900 p-0"
+        >
+          <OutputTable
+            className="h-full rounded-xl border-0"
+            entries={weightedEntries}
+            onCopy={handleCopy}
+            copied={copied}
+          />
         </div>
       </div>
     </main>
