@@ -12,6 +12,7 @@ import {
   ManualInputCard,
   ProfileManagerCard,
 } from "@/components/levelupchance/dataset-editor"
+import { CheckLevelSpread } from "@/components/levelupchance/check-level-spread"
 import { OutputTable } from "@/components/levelupchance/output-table"
 import {
   loadSavedProfilesStore,
@@ -521,13 +522,23 @@ export function App() {
 
         <div
           id="copy-section"
-          className="h-full rounded-xl border-2 border-purple-900 p-0"
+          className="h-full rounded-xl border-2 border-sky-900 p-0"
         >
           <OutputTable
             className="h-full rounded-xl border-0"
             entries={weightedEntries}
             onCopy={handleCopy}
             copied={copied}
+          />
+        </div>
+
+        <div
+          id="check-level-spread-section"
+          className="h-full rounded-xl border-2 border-purple-900 p-0 lg:col-span-2"
+        >
+          <CheckLevelSpread
+            className="h-full rounded-xl border-0"
+            expectedEntries={weightedEntries}
           />
         </div>
       </div>
