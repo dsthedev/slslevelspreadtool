@@ -10,6 +10,13 @@ import {
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 type DatasetEditorProps = {
@@ -57,6 +64,10 @@ export function ProfileManagerCard({
   className,
 }: ProfileManagerCardProps) {
   const hasSelectedProfile = selectedProfileId !== null
+  const selectedProfileName =
+    selectedProfileId === null || selectedProfileId === ""
+      ? "Current unsaved state"
+      : savedProfiles.find((p) => p.id === selectedProfileId)?.name ?? selectedProfileId
 
   return (
     <Card className={cn("h-full", className)}>
@@ -69,19 +80,19 @@ export function ProfileManagerCard({
       <CardContent className="flex h-full flex-col gap-4">
         <div className="space-y-2 rounded-xl border border-border/70 bg-muted/15 p-3">
           <Label htmlFor="saved-profile-select">Saved profiles</Label>
-          <select
-            id="saved-profile-select"
-            value={selectedProfileId ?? ""}
-            onChange={(event) => onSelectProfile(event.target.value)}
-            className="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            <option value="">Current unsaved state</option>
-            {savedProfiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.name}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedProfileId ?? ""} onValueChange={onSelectProfile}>
+            <SelectTrigger id="saved-profile-select" className="w-full">
+              <SelectValue placeholder={selectedProfileName} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Current unsaved state</SelectItem>
+              {savedProfiles.map((profile) => (
+                <SelectItem key={profile.id} value={profile.id}>
+                  {profile.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={onSaveNewProfile}>
               Save New
