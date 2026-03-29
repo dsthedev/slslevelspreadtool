@@ -32,6 +32,14 @@ type ParsedLevelRow = {
   count: number
   observedPercent: number
   expectedPercent: number
+  differencePercent: number
+}
+
+type AccuracySummary = {
+  averageAbsoluteDifference: number
+  levelCount: number
+  totalVariationDistance: number
+  accuracyPercent: number
 }
 
 const SELECTED_LEVEL_PATTERN = /Selected Level:\s*(\d+)/
@@ -81,14 +89,23 @@ export function CheckLevelSpread({ expectedEntries, className }: CheckLevelSprea
       counts.set(parsedLevel, (counts.get(parsedLevel) ?? 0) + 1)
     }
 
-    const rows = Array.from(counts.entries())
-      .sort((a, b) => a[0] - b[0])
-      .map(([level, count]): ParsedLevelRow => ({
+    const allLevels = Array.from(
+      new Set([...expectedByLevel.keys(), ...counts.keys()])
+    ).sort((a, b) => a - b)
+
+    const rows = allLevels.map((level): ParsedLevelRow => {
+      const count = counts.get(level) ?? 0
+      const observedPercent = matched > 0 ? (count / matched) * 100 : 0
+      const expectedPercent = expectedByLevel.get(level) ?? 0
+
+      return {
         level,
         count,
-        observedPercent: matched > 0 ? (count / matched) * 100 : 0,
-        expectedPercent: expectedByLevel.get(level) ?? 0,
-      }))
+        observedPercent,
+        expectedPercent,
+        differencePercent: Math.abs(observedPercent - expectedPercent),
+      }
+    })
 
     return {
       totalLines: lines.length,
@@ -103,6 +120,31 @@ export function CheckLevelSpread({ expectedEntries, className }: CheckLevelSprea
         Math.max(maxValue, row.observedPercent, row.expectedPercent),
       0
     )
+  }, [parseResult.rows])
+
+  const accuracySummary = useMemo<AccuracySummary>(() => {
+    if (parseResult.rows.length === 0) {
+      return {
+        averageAbsoluteDifference: 0,
+        levelCount: 0,
+        totalVariationDistance: 0,
+        accuracyPercent: 0,
+      }
+    }
+
+    const totalDifference = parseResult.rows.reduce(
+      (sum, row) => sum + row.differencePercent,
+      0
+    )
+    const averageAbsoluteDifference = totalDifference / parseResult.rows.length
+    const totalVariationDistance = Math.min(100, totalDifference / 2)
+
+    return {
+      averageAbsoluteDifference,
+      levelCount: parseResult.rows.length,
+      totalVariationDistance,
+      accuracyPercent: Math.max(0, 100 - totalVariationDistance),
+    }
   }, [parseResult.rows])
 
   return (
@@ -137,9 +179,15 @@ export function CheckLevelSpread({ expectedEntries, className }: CheckLevelSprea
               placeholder="Paste log lines containing 'Selected Level: <number>'"
             />
             {hasInput ? (
-              <p className="text-xs text-muted-foreground">
-                Parsed {parseResult.matchedLines} matching roll lines out of {parseResult.totalLines} total non-empty lines.
-              </p>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p>
+                  Parsed {parseResult.matchedLines} matching roll lines out of {parseResult.totalLines} total non-empty lines.
+                </p>
+                <p>
+                  Avg absolute level diff: {accuracySummary.averageAbsoluteDifference.toFixed(2)}% across {accuracySummary.levelCount} levels
+                  {" "}(distribution mismatch {accuracySummary.totalVariationDistance.toFixed(2)}%, match score {accuracySummary.accuracyPercent.toFixed(2)}%).
+                </p>
+              </div>
             ) : (
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>Example supported lines:</p>
@@ -209,12 +257,13 @@ export function CheckLevelSpread({ expectedEntries, className }: CheckLevelSprea
                     <TableHead className="text-right">Count</TableHead>
                     <TableHead className="text-right">Observed %</TableHead>
                     <TableHead className="text-right">Expected %</TableHead>
+                    <TableHead className="text-right">Diff %</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {parseResult.rows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
                         No parsed levels yet
                       </TableCell>
                     </TableRow>
@@ -228,6 +277,9 @@ export function CheckLevelSpread({ expectedEntries, className }: CheckLevelSprea
                         </TableCell>
                         <TableCell className="text-right font-mono">
                           {row.expectedPercent.toFixed(2)}%
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {row.differencePercent.toFixed(2)}%
                         </TableCell>
                       </TableRow>
                     ))
