@@ -253,7 +253,22 @@ export function App() {
       return
     }
 
-    const output = formatLevelSpread(weightedEntries)
+    const selectedProfileName =
+      selectedProfileId !== null
+        ? savedProfiles.find((profile) => profile.id === selectedProfileId)?.name ??
+          "Unknown profile"
+        : "Unsaved profile"
+    const selectedAlgorithmLabel =
+      distributionAlgorithms.find((item) => item.value === algorithm)?.label ??
+      algorithm
+    const metadataLine = `# Generated via ${selectedAlgorithmLabel} | ${selectedProfileName}`
+    const formattedSpread = formatLevelSpread(weightedEntries)
+    const output = [metadataLine, formattedSpread]
+      .join("\n")
+      .split("\n")
+      .map((line) => `  ${line}`)
+      .join("\n")
+
     await navigator.clipboard.writeText(output)
     setCopied(true)
   }
